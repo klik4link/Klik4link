@@ -63,35 +63,28 @@ window.addEventListener("scroll",()=>{
 COUNTER
 =====================================*/
 
-const counters=document.querySelectorAll(".counter");
+const counters = document.querySelectorAll(".counter");
 
-const speed=200;
+counters.forEach(counter => {
 
-counters.forEach(counter=>{
+    const target = Number(counter.dataset.target);
+    const duration = 5000; // 5 detik
+    const start = performance.now();
 
-    const update=()=>{
+    function update(now) {
 
-        const target=+counter.dataset.target;
+        const progress = Math.min((now - start) / duration, 1);
+        const value = Math.floor(progress * target);
 
-        const count=+counter.innerText.replace(/,/g,"");
+        counter.innerText = value.toLocaleString("id-ID");
 
-        const inc=target/speed;
-
-        if(count<target){
-
-            counter.innerText=Math.ceil(count+inc).toLocaleString();
-
+        if (progress < 1) {
             requestAnimationFrame(update);
-
-        }else{
-
-            counter.innerText=target.toLocaleString();
-
         }
 
-    };
+    }
 
-    update();
+    requestAnimationFrame(update);
 
 });
 
