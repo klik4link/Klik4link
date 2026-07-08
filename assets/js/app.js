@@ -1,501 +1,1257 @@
-/*=====================================
-CLICK2PAY APP
-Version : 1.0
-=====================================*/
+/* =========================================================
+   CLICK2PAY
+   PREMIUM APP JS
+========================================================= */
 
-"use strict";
 
-/*=====================================
-AOS
-=====================================*/
+document.addEventListener("DOMContentLoaded",()=>{
 
-AOS.init({
 
-    duration:1000,
+/* =========================================================
+   PAGE LOADED
+========================================================= */
 
-    once:true,
+document.body.classList.add("loaded");
 
-    easing:"ease-in-out"
 
-});
 
-/*=====================================
-COPYRIGHT YEAR
-=====================================*/
+
+/* =========================================================
+   YEAR FOOTER
+========================================================= */
 
 const year = document.getElementById("year");
 
 if(year){
 
-    year.textContent = new Date().getFullYear();
+    year.textContent =
+    new Date().getFullYear();
 
 }
 
-/*=====================================
-NAVBAR SCROLL
-=====================================*/
 
-const navbar = document.querySelector(".glass-navbar");
+
+
+
+/* =========================================================
+   NAVBAR SCROLL EFFECT
+========================================================= */
+
+
+const navbar =
+document.querySelector(".glass-navbar");
+
 
 window.addEventListener("scroll",()=>{
 
-    if(window.scrollY > 80){
 
-        navbar.style.background="rgba(255,255,255,.95)";
+    if(!navbar) return;
 
-        navbar.style.boxShadow="0 15px 40px rgba(0,0,0,.08)";
 
-        navbar.style.padding="10px 0";
+    if(window.scrollY > 50){
 
-    }else{
-
-        navbar.style.background="rgba(255,255,255,.75)";
-
-        navbar.style.boxShadow="0 8px 30px rgba(0,0,0,.08)";
-
-        navbar.style.padding="18px 0";
+        navbar.classList.add("scrolled");
 
     }
 
+    else{
+
+        navbar.classList.remove("scrolled");
+
+    }
+
+
 });
 
-/*=====================================
-COUNTER
-=====================================*/
 
-const counters = document.querySelectorAll(".counter");
 
-counters.forEach(counter => {
 
-    const target = Number(counter.dataset.target);
-    const duration = 5000; // 5 detik
-    const start = performance.now();
 
-    function update(now) {
 
-        const progress = Math.min((now - start) / duration, 1);
-        const value = Math.floor(progress * target);
+/* =========================================================
+   SMOOTH SCROLL
+========================================================= */
 
-        counter.innerText = value.toLocaleString("id-ID");
 
-        if (progress < 1) {
+document.querySelectorAll('a[href^="#"]').forEach(link=>{
+
+
+    link.addEventListener("click",e=>{
+
+
+        const target =
+        document.querySelector(
+            link.getAttribute("href")
+        );
+
+
+        if(target){
+
+            e.preventDefault();
+
+
+            target.scrollIntoView({
+
+                behavior:"smooth",
+
+                block:"start"
+
+            });
+
+
+        }
+
+
+    });
+
+
+});
+
+
+
+
+
+
+/* =========================================================
+   COUNTER ANIMATION
+========================================================= */
+
+
+const counters =
+document.querySelectorAll(".counter");
+
+
+const formatter =
+new Intl.NumberFormat("id-ID");
+
+
+
+const startCounter=(counter)=>{
+
+
+    const target =
+    Number(counter.dataset.target);
+
+
+    let current=0;
+
+
+    const speed =
+    Math.max(
+        target / 120,
+        1
+    );
+
+
+
+    const update=()=>{
+
+
+        current += speed;
+
+
+
+        if(current < target){
+
+
+            counter.textContent =
+            formatter.format(
+                Math.floor(current)
+            );
+
+
             requestAnimationFrame(update);
+
+
         }
+
+
+        else{
+
+
+            counter.textContent =
+            formatter.format(target);
+
+
+        }
+
+
+    };
+
+
+    update();
+
+
+};
+
+
+
+
+
+const observerCounter =
+new IntersectionObserver(entries=>{
+
+
+    entries.forEach(entry=>{
+
+
+        if(entry.isIntersecting){
+
+
+            startCounter(
+                entry.target
+            );
+
+
+            observerCounter.unobserve(
+                entry.target
+            );
+
+
+        }
+
+
+    });
+
+
+},{
+    threshold:.5
+});
+
+
+
+counters.forEach(counter=>{
+
+
+    observerCounter.observe(counter);
+
+
+});
+
+
+
+
+
+
+
+/* =========================================================
+   LIVE ONLINE USERS
+========================================================= */
+
+
+const liveUsers =
+document.getElementById("live-users");
+
+
+if(liveUsers){
+
+
+    let users =
+    Number(
+        liveUsers.textContent.replace(",","")
+    );
+
+
+    setInterval(()=>{
+
+
+        const change =
+        Math.floor(
+            Math.random()*15
+        ) - 7;
+
+
+
+        users += change;
+
+
+
+        if(users < 1000){
+
+            users = 1000;
+
+        }
+
+
+
+        liveUsers.textContent =
+        formatter.format(users);
+
+
+
+    },4000);
+
+
+}
+
+
+
+
+
+
+/* =========================================================
+   ACTIVE MENU ON SCROLL
+========================================================= */
+
+
+const sections =
+document.querySelectorAll("section[id]");
+
+
+const navLinks =
+document.querySelectorAll(".nav-link");
+
+
+
+window.addEventListener("scroll",()=>{
+
+
+    let current="";
+
+
+    sections.forEach(section=>{
+
+
+        const top =
+        section.offsetTop - 150;
+
+
+        const height =
+        section.offsetHeight;
+
+
+        if(
+            window.scrollY >= top &&
+            window.scrollY < top+height
+        ){
+
+            current =
+            section.getAttribute("id");
+
+        }
+
+
+    });
+
+
+
+    navLinks.forEach(link=>{
+
+
+        link.classList.remove("active");
+
+
+        if(
+            link.getAttribute("href")
+            === "#"+current
+        ){
+
+            link.classList.add("active");
+
+        }
+
+
+    });
+
+
+
+});
+
+
+
+
+
+
+/* =========================================================
+   SCROLL REVEAL
+========================================================= */
+
+
+const revealElements =
+document.querySelectorAll(
+`
+.feature-card,
+.stat-card,
+.payment-card,
+.security-card,
+.step-card,
+.glass-card
+`
+);
+
+
+
+const revealObserver =
+new IntersectionObserver(entries=>{
+
+
+    entries.forEach(entry=>{
+
+
+        if(entry.isIntersecting){
+
+
+            entry.target.classList.add(
+                "show"
+            );
+
+
+        }
+
+
+    });
+
+
+},{
+    threshold:.15
+});
+
+
+
+revealElements.forEach(el=>{
+
+
+    el.classList.add("reveal");
+
+    revealObserver.observe(el);
+
+
+});
+
+
+
+
+
+
+
+/* =========================================================
+   SNOW EFFECT
+========================================================= */
+
+
+const snowContainer =
+document.querySelector(
+".snow-container"
+);
+
+
+
+if(snowContainer){
+
+
+    for(let i=0;i<80;i++){
+
+
+        const snow =
+        document.createElement("span");
+
+
+        snow.className="snow";
+
+
+        snow.style.left =
+        Math.random()*100+"%";
+
+
+        snow.style.animationDuration =
+        (5+
+        Math.random()*10)
+        +"s";
+
+
+
+        snow.style.animationDelay =
+        Math.random()*10+"s";
+
+
+
+        snow.style.opacity =
+        Math.random();
+
+
+
+        snowContainer.appendChild(
+            snow
+        );
+
 
     }
 
-    requestAnimationFrame(update);
-
-});
-
-/*=====================================
-BUTTON RIPPLE
-=====================================*/
-
-document.querySelectorAll(".btn").forEach(button=>{
-
-button.addEventListener("mouseenter",()=>{
-
-button.style.transition=".3s";
-
-});
-
-});
-
-/*=====================================
-SMOOTH SCROLL
-=====================================*/
-
-document.querySelectorAll("a[href^='#']").forEach(anchor=>{
-
-anchor.addEventListener("click",function(e){
-
-e.preventDefault();
-
-document.querySelector(this.getAttribute("href"))
-
-.scrollIntoView({
-
-behavior:"smooth"
-
-});
-
-});
-
-});
-
-/*=====================================
-FLOATING CARDS
-=====================================*/
-
-document.querySelectorAll(
-".dashboard-card,.stat-card,.step-card,.feature-card,.security-card"
-).forEach(card=>{
-
-let x=0;
-let y=0;
-
-card.addEventListener("mousemove",(e)=>{
-
-const rect=card.getBoundingClientRect();
-
-x=e.clientX-rect.left;
-y=e.clientY-rect.top;
-
-card.style.transform=
-`perspective(1000px)
-rotateX(${-(y-rect.height/2)/18}deg)
-rotateY(${(x-rect.width/2)/18}deg)
-translateY(-8px)`;
-
-});
-
-card.addEventListener("mouseleave",()=>{
-
-card.style.transform="";
-
-});
-
-});
-
-/*=====================================
-STAR GENERATOR
-=====================================*/
-
-const stars=document.querySelector(".stars-container");
-
-if(stars){
-
-for(let i=0;i<120;i++){
-
-const star=document.createElement("span");
-
-star.style.position="absolute";
-
-star.style.width="3px";
-
-star.style.height="3px";
-
-star.style.borderRadius="50%";
-
-star.style.background="#ffffff";
-
-star.style.left=Math.random()*100+"%";
-
-star.style.top=Math.random()*100+"%";
-
-star.style.opacity=Math.random();
-
-star.style.animation=
-`twinkle ${2+Math.random()*5}s infinite`;
-
-stars.appendChild(star);
 
 }
 
-}
 
-/*=====================================
-SNOW GENERATOR
-=====================================*/
 
-const snow=document.querySelector(".snow-container");
 
-if(snow){
 
-for(let i=0;i<150;i++){
 
-const item=document.createElement("div");
+/* =========================================================
+   PARALLAX BACKGROUND
+========================================================= */
 
-const size=Math.random()*6+2;
 
-item.style.position="absolute";
+const bg =
+document.querySelector(".animated-bg");
 
-item.style.width=size+"px";
 
-item.style.height=size+"px";
+window.addEventListener("mousemove",e=>{
 
-item.style.borderRadius="50%";
 
-item.style.background="#ffffff";
+    if(!bg)return;
 
-item.style.opacity=Math.random();
 
-item.style.left=Math.random()*100+"vw";
+    const x =
+    (e.clientX/window.innerWidth-.5)
+    *30;
 
-item.style.top="-20px";
 
-item.style.filter="blur(.5px)";
+    const y =
+    (e.clientY/window.innerHeight-.5)
+    *30;
 
-item.style.animation=
-`snow ${8+Math.random()*12}s linear infinite`;
 
-item.style.animationDelay=
-`${Math.random()*10}s`;
 
-snow.appendChild(item);
+    bg.style.transform =
+    `
+    translate(${x}px,${y}px)
+    `;
 
-}
-
-}
-
-/*=====================================
-PROGRESS ANIMATION
-=====================================*/
-
-document.querySelectorAll(".progress-bar")
-
-.forEach(bar=>{
-
-const width=bar.style.width;
-
-bar.style.width="0";
-
-setTimeout(()=>{
-
-bar.style.width=width;
-
-},400);
 
 });
 
-/*=====================================
-NUMBER PULSE
-=====================================*/
 
-setInterval(()=>{
 
-document.querySelectorAll(".counter")
 
-.forEach(el=>{
 
-el.animate(
 
-[
-{transform:"scale(1)"},
-{transform:"scale(1.06)"},
-{transform:"scale(1)"}
-],
+/* =========================================================
+   DASHBOARD FLOAT RANDOM
+========================================================= */
 
-{
 
-duration:800
-
-}
-
+const dashboard =
+document.querySelector(
+".dashboard-card"
 );
 
-});
 
-},4000);
 
-/*=====================================
-PARALLAX BACKGROUND
-=====================================*/
+if(dashboard){
 
-document.addEventListener("mousemove",(e)=>{
 
-const bg=document.querySelector(".animated-bg");
+    let angle=0;
 
-if(!bg) return;
 
-const x=(e.clientX/window.innerWidth)*20;
+    setInterval(()=>{
 
-const y=(e.clientY/window.innerHeight)*20;
 
-bg.style.transform=`translate(${x}px,${y}px)`;
+        angle += .02;
 
-});
 
-/*=====================================
-MARQUEE SPEED
-=====================================*/
+        dashboard.style.transform =
+        `
+        translateY(${Math.sin(angle)*8}px)
+        `;
 
-const marquee=document.querySelector(".marquee-content");
 
-if(marquee){
+    },50);
 
-const wrap=document.querySelector(".marquee");
-
-wrap.addEventListener("mouseenter",()=>{
-
-marquee.style.animationPlayState="paused";
-
-});
-
-wrap.addEventListener("mouseleave",()=>{
-
-marquee.style.animationPlayState="running";
-
-});
 
 }
 
-/*=====================================
-BUTTON GLOW
-=====================================*/
 
-document.querySelectorAll(".btn-primary")
 
-.forEach(btn=>{
 
-btn.addEventListener("mouseenter",()=>{
 
-btn.animate(
 
-[
-{
-boxShadow:"0 0 0 rgba(33,150,243,.2)"
-},
-{
-boxShadow:"0 0 35px rgba(33,150,243,.6)"
-},
-{
-boxShadow:"0 0 0 rgba(33,150,243,.2)"
-}
-],
+/* =========================================================
+   TYPING EFFECT OPTIONAL
+========================================================= */
 
-{
-duration:1200
-}
 
+const typing =
+document.querySelector(
+".typing"
 );
 
-});
 
-});
 
-/*=====================================
-FLOAT ICON
-=====================================*/
+if(typing){
 
-document.querySelectorAll(
 
-".stat-icon,.step-icon"
+    const text =
+    typing.dataset.text ||
+    typing.textContent;
 
-).forEach(icon=>{
 
-setInterval(()=>{
+    typing.textContent="";
 
-icon.animate(
 
-[
-{
-transform:"translateY(0)"
-},
-{
-transform:"translateY(-8px)"
-},
-{
-transform:"translateY(0)"
-}
-],
+    let i=0;
 
-{
 
-duration:2500,
 
-iterations:1
+    function type(){
 
-}
 
-);
+        if(i < text.length){
 
-},3000);
 
-});
+            typing.textContent +=
+            text.charAt(i);
 
-/*=====================================
-SCROLL REVEAL
-=====================================*/
 
-const revealItems=document.querySelectorAll(
+            i++;
 
-".feature-item,.dashboard-item"
 
-);
+            setTimeout(type,70);
 
-const revealObserver=new IntersectionObserver(entries=>{
 
-entries.forEach(entry=>{
-
-if(entry.isIntersecting){
-
-entry.target.style.opacity="1";
-
-entry.target.style.transform="translateY(0)";
-
-}
-
-});
-
-});
-
-revealItems.forEach(item=>{
-
-item.style.opacity="0";
-
-item.style.transform="translateY(30px)";
-
-item.style.transition=".7s";
-
-revealObserver.observe(item);
-
-});
-
-/*=====================================
-LIVE USER ONLINE
-=====================================*/
-
-const liveUsers = document.getElementById("live-users");
-
-if (liveUsers) {
-
-    let current = 1825;
-
-    function updateLiveUsers() {
-
-        // Lebih sering naik daripada turun
-        if (Math.random() < 0.7) {
-            current += Math.floor(Math.random() * 8) + 1;
-        } else {
-            current -= Math.floor(Math.random() * 5) + 1;
         }
 
-        // Batasi agar tetap realistis
-        if (current < 1700) {
-            current = 1700 + Math.floor(Math.random() * 30);
-        }
-
-        if (current > 1950) {
-            current = 1920 + Math.floor(Math.random() * 20);
-        }
-
-        liveUsers.textContent = current.toLocaleString("id-ID");
-
-        // Update tiap 1–3 detik
-        setTimeout(updateLiveUsers, 1000 + Math.random() * 2000);
 
     }
 
-    updateLiveUsers();
+
+    type();
+
 
 }
 
-/*=====================================
-LOADING
-=====================================*/
 
-window.addEventListener("load",()=>{
 
-document.body.classList.add("loaded");
 
 });
 
-/*=====================================
-END
-=====================================*/
+/* =========================================================
+   PARTICLES BACKGROUND
+========================================================= */
 
-console.log(
-"🚀 Click2Pay Loaded Successfully"
+
+if(typeof particlesJS !== "undefined"){
+
+
+    const particleLayer =
+    document.createElement("div");
+
+
+    particleLayer.id =
+    "particles-js";
+
+
+    particleLayer.style.position =
+    "fixed";
+
+
+    particleLayer.style.inset =
+    "0";
+
+
+    particleLayer.style.zIndex =
+    "-2";
+
+
+    particleLayer.style.pointerEvents =
+    "none";
+
+
+    document.body.prepend(
+        particleLayer
+    );
+
+
+
+    particlesJS("particles-js",{
+
+
+        particles:{
+
+
+            number:{
+
+
+                value:65,
+
+
+                density:{
+
+
+                    enable:true,
+
+
+                    value_area:900
+
+
+                }
+
+
+            },
+
+
+            color:{
+
+
+                value:"#1e88ff"
+
+
+            },
+
+
+            shape:{
+
+
+                type:"circle"
+
+
+            },
+
+
+            opacity:{
+
+
+                value:.35,
+
+
+                random:true
+
+
+            },
+
+
+            size:{
+
+
+                value:3,
+
+
+                random:true
+
+
+            },
+
+
+            line_linked:{
+
+
+                enable:true,
+
+
+                distance:140,
+
+
+                color:"#6c63ff",
+
+
+                opacity:.25,
+
+
+                width:1
+
+
+            },
+
+
+            move:{
+
+
+                enable:true,
+
+
+                speed:1.5,
+
+
+                direction:"none",
+
+
+                random:true,
+
+
+                straight:false,
+
+
+                out_mode:"out",
+
+
+                bounce:false
+
+
+            }
+
+
+        },
+
+
+
+        interactivity:{
+
+
+            detect_on:"canvas",
+
+
+            events:{
+
+
+                onhover:{
+
+
+                    enable:true,
+
+
+                    mode:"grab"
+
+
+                },
+
+
+                onclick:{
+
+
+                    enable:true,
+
+
+                    mode:"push"
+
+
+                }
+
+
+            },
+
+
+
+            modes:{
+
+
+                grab:{
+
+
+                    distance:180,
+
+
+                    line_linked:{
+
+
+                        opacity:.6
+
+
+                    }
+
+
+                },
+
+
+                push:{
+
+
+                    particles_nb:4
+
+
+                }
+
+
+            }
+
+
+        },
+
+
+
+        retina_detect:true
+
+
+    });
+
+
+}
+/* =========================================================
+   3D CARD TILT
+========================================================= */
+
+
+if(window.innerWidth > 768){
+
+
+const tiltCards =
+document.querySelectorAll(
+`
+.feature-card,
+.stat-card,
+.payment-card,
+.security-card
+`
 );
+
+
+
+tiltCards.forEach(card=>{
+
+
+    card.addEventListener(
+    "mousemove",
+    e=>{
+
+
+        const rect =
+        card.getBoundingClientRect();
+
+
+        const x =
+        e.clientX - rect.left;
+
+
+        const y =
+        e.clientY - rect.top;
+
+
+
+        const rotateY =
+        ((x / rect.width)-.5)*12;
+
+
+        const rotateX =
+        ((y / rect.height)-.5)*-12;
+
+
+
+        card.style.transform =
+        `
+        perspective(900px)
+        rotateX(${rotateX}deg)
+        rotateY(${rotateY}deg)
+        translateY(-8px)
+        `;
+
+
+    });
+
+
+
+    card.addEventListener(
+    "mouseleave",
+    ()=>{
+
+
+        card.style.transform="";
+
+
+    });
+
+
+});
+
+
+}
+/* =========================================================
+   BUTTON RIPPLE EFFECT
+========================================================= */
+
+
+document.querySelectorAll(".btn")
+.forEach(button=>{
+
+
+button.addEventListener("click",function(e){
+
+
+    const ripple =
+    document.createElement("span");
+
+
+    const rect =
+    this.getBoundingClientRect();
+
+
+
+    ripple.style.position="absolute";
+
+    ripple.style.width="10px";
+
+    ripple.style.height="10px";
+
+    ripple.style.borderRadius="50%";
+
+    ripple.style.background=
+    "rgba(255,255,255,.5)";
+
+    ripple.style.left=
+    (e.clientX-rect.left)+"px";
+
+    ripple.style.top=
+    (e.clientY-rect.top)+"px";
+
+    ripple.style.transform=
+    "scale(0)";
+
+    ripple.style.animation=
+    "ripple .6s linear";
+
+
+
+    this.style.position="relative";
+
+    this.style.overflow="hidden";
+
+
+    this.appendChild(ripple);
+
+
+
+    setTimeout(()=>{
+
+
+        ripple.remove();
+
+
+    },600);
+
+
+
+});
+
+
+});
+/* =========================================================
+   PERFORMANCE OPTIMIZATION
+   CLICK2PAY
+========================================================= */
+
+
+/* =========================
+   DISABLE HEAVY EFFECT LOW DEVICE
+========================= */
+
+
+const isLowDevice =
+navigator.hardwareConcurrency &&
+navigator.hardwareConcurrency <= 4;
+
+
+
+if(isLowDevice || window.innerWidth < 600){
+
+
+    // Kurangi particle
+
+    const particle =
+    document.getElementById(
+        "particles-js"
+    );
+
+
+    if(particle){
+
+        particle.style.display="none";
+
+    }
+
+
+
+    // Disable tilt
+
+    document
+    .querySelectorAll(
+    ".feature-card,.stat-card,.payment-card,.security-card"
+    )
+    .forEach(card=>{
+
+        card.style.transition=".3s";
+
+    });
+
+
+
+}
+
+
+
+
+
+
+
+/* =========================
+   LAZY IMAGE LOADING
+========================= */
+
+
+document
+.querySelectorAll("img")
+.forEach(img=>{
+
+
+    img.loading="lazy";
+
+
+});
+
+
+
+
+
+
+
+/* =========================
+   OPTIMIZE SCROLL EVENT
+========================= */
+
+
+let ticking=false;
+
+
+
+window.addEventListener(
+"scroll",
+()=>{
+
+
+    if(!ticking){
+
+
+        window.requestAnimationFrame(()=>{
+
+
+            ticking=false;
+
+
+        });
+
+
+        ticking=true;
+
+
+    }
+
+
+},
+{
+    passive:true
+});
+
+
+
+
+
+
+
+
+/* =========================
+   MOBILE NAV CLOSE
+========================= */
+
+
+const navLinksMobile =
+document.querySelectorAll(
+".navbar-nav .nav-link"
+);
+
+
+
+const navbarCollapse =
+document.querySelector(
+".navbar-collapse"
+);
+
+
+
+navLinksMobile.forEach(link=>{
+
+
+link.addEventListener(
+"click",
+()=>{
+
+
+    if(
+    window.innerWidth < 992 &&
+    navbarCollapse.classList.contains("show")
+    ){
+
+
+        document
+        .querySelector(
+        ".navbar-toggler"
+        )
+        .click();
+
+
+    }
+
+
+});
+
+
+});
+
+
+
+
+
+
+
+
+/* =========================
+   AUTO YEAR
+========================= */
+
+
+const footerYear =
+document.getElementById(
+"year"
+);
+
+
+
+if(footerYear){
+
+    footerYear.innerHTML =
+    new Date().getFullYear();
+
+}
+
+
+
+
+
+
+/* =========================
+   PREVENT HORIZONTAL BUG
+========================= */
+
+
+document.body.style.overflowX =
+"hidden";
+
+
+
+
+
+
+/* =========================
+   NETWORK STATUS
+========================= */
+
+
+window.addEventListener(
+"offline",
+()=>{
+
+
+    console.log(
+    "Click2Pay offline mode"
+    );
+
+
+});
+
+
+
+window.addEventListener(
+"online",
+()=>{
+
+
+    console.log(
+    "Click2Pay online"
+    );
+
+
+});
