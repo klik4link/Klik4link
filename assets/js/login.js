@@ -49,11 +49,29 @@ form.addEventListener("submit",(e)=>{
 
 e.preventDefault();
 
-const verify=document.getElementById("verifyCheck");
+const token=document.querySelector(
+'input[name="cf-turnstile-response"]'
+)?.value;
 
-if(!verify.checked){
+if(!token){
 
-showToast("Silakan lakukan verifikasi terlebih dahulu.");
+showToast("Silakan selesaikan verifikasi Turnstile.");
+
+return;
+
+}
+
+form.addEventListener("submit",(e)=>{
+
+e.preventDefault();
+
+const token=document.querySelector(
+'input[name="cf-turnstile-response"]'
+)?.value;
+
+if(!token){
+
+showToast("Silakan selesaikan verifikasi Turnstile.");
 
 return;
 
@@ -78,8 +96,6 @@ window.location.href="dashboard.html";
 },1500);
 
 });
-
-}
 
 /* =========================
    TOAST
