@@ -1,70 +1,65 @@
 /* =========================================================
    CLICK2PAY
-   PREMIUM APP JS
+   PREMIUM JAVASCRIPT
 ========================================================= */
 
-
-document.addEventListener("DOMContentLoaded",()=>{
-
+"use strict";
 
 /* =========================================================
-   PAGE LOADED
+   DOM READY
 ========================================================= */
 
-document.body.classList.add("loaded");
+document.addEventListener("DOMContentLoaded", () => {
 
+    document.body.classList.add("loaded");
 
+    initNavbar();
 
+    initSmoothScroll();
 
-/* =========================================================
-   YEAR FOOTER
-========================================================= */
+    initReveal();
 
-const year = document.getElementById("year");
+    initCounter();
 
-if(year){
+    initRipple();
 
-    year.textContent =
-    new Date().getFullYear();
-
-}
-
-
-
-
-
-/* =========================================================
-   NAVBAR SCROLL EFFECT
-========================================================= */
-
-
-const navbar =
-document.querySelector(".glass-navbar");
-
-
-window.addEventListener("scroll",()=>{
-
-
-    if(!navbar) return;
-
-
-    if(window.scrollY > 50){
-
-        navbar.classList.add("scrolled");
-
-    }
-
-    else{
-
-        navbar.classList.remove("scrolled");
-
-    }
-
+    initParallax();
 
 });
 
 
 
+/* =========================================================
+   NAVBAR SCROLL
+========================================================= */
+
+function initNavbar(){
+
+    const navbar=document.querySelector(".glass-navbar");
+
+    if(!navbar) return;
+
+    const updateNavbar=()=>{
+
+        if(window.scrollY>50){
+
+            navbar.classList.add("scrolled");
+
+        }else{
+
+            navbar.classList.remove("scrolled");
+
+        }
+
+    };
+
+    updateNavbar();
+
+    window.addEventListener("scroll",updateNavbar,{
+        passive:true
+    });
+
+}
 
 
 
@@ -72,23 +67,23 @@ window.addEventListener("scroll",()=>{
    SMOOTH SCROLL
 ========================================================= */
 
+function initSmoothScroll(){
 
-document.querySelectorAll('a[href^="#"]').forEach(link=>{
+    document
+    .querySelectorAll('a[href^="#"]')
+    .forEach(link=>{
 
+        link.addEventListener("click",e=>{
 
-    link.addEventListener("click",e=>{
+            const id=link.getAttribute("href");
 
+            if(id==="#" || id.length<2) return;
 
-        const target =
-        document.querySelector(
-            link.getAttribute("href")
-        );
+            const target=document.querySelector(id);
 
-
-        if(target){
+            if(!target) return;
 
             e.preventDefault();
-
 
             target.scrollIntoView({
 
@@ -98,17 +93,45 @@ document.querySelectorAll('a[href^="#"]').forEach(link=>{
 
             });
 
-
-        }
-
+        });
 
     });
 
-
-});
-
+}
 
 
+
+/* =========================================================
+   REVEAL ANIMATION
+========================================================= */
+
+function initReveal(){
+
+    const items=document.querySelectorAll(".reveal");
+
+    if(!items.length) return;
+
+    const observer=new IntersectionObserver(entries=>{
+
+        entries.forEach(entry=>{
+
+            if(entry.isIntersecting){
+
+                entry.target.classList.add("show");
+
+            }
+
+        });
+
+    },{
+
+        threshold:.15
+
+    });
+
+    items.forEach(item=>observer.observe(item));
+
+}
 
 
 
@@ -116,1074 +139,721 @@ document.querySelectorAll('a[href^="#"]').forEach(link=>{
    COUNTER ANIMATION
 ========================================================= */
 
+function initCounter(){
 
-const counters =
-document.querySelectorAll(".counter");
+    const counters=document.querySelectorAll("[data-count]");
+
+    if(!counters.length) return;
+
+    const observer=new IntersectionObserver(entries=>{
+
+        entries.forEach(entry=>{
+
+            if(!entry.isIntersecting) return;
+
+            animateCounter(entry.target);
+
+            observer.unobserve(entry.target);
+
+        });
+
+    },{
+
+        threshold:.5
+
+    });
+
+    counters.forEach(counter=>observer.observe(counter));
+
+}
 
 
-const formatter =
-new Intl.NumberFormat("id-ID");
 
+function animateCounter(element){
 
+    const target=parseInt(
 
-const startCounter=(counter)=>{
+        element.dataset.count
 
-
-    const target =
-    Number(counter.dataset.target);
-
-
-    let current=0;
-
-
-    const speed =
-    Math.max(
-        target / 120,
-        1
     );
 
+    if(isNaN(target)) return;
 
+    const duration=1800;
 
-    const update=()=>{
+    const start=0;
 
+    const startTime=performance.now();
 
-        current += speed;
+    function update(now){
 
+        const progress=Math.min(
 
+            (now-startTime)/duration,
 
-        if(current < target){
+            1
 
+        );
 
-            counter.textContent =
-            formatter.format(
-                Math.floor(current)
-            );
+        const value=Math.floor(
 
+            progress*(target-start)+start
+
+        );
+
+        element.textContent=value.toLocaleString();
+
+        if(progress<1){
 
             requestAnimationFrame(update);
 
-
         }
 
+    }
 
-        else{
+    requestAnimationFrame(update);
+
+}
 
 
-            counter.textContent =
-            formatter.format(target);
 
+/* =========================================================
+   RIPPLE EFFECT
+========================================================= */
+
+function initRipple(){
+
+    document.querySelectorAll(".btn").forEach(btn=>{
+
+        btn.addEventListener("click",function(e){
+
+            const circle=document.createElement("span");
+
+            const size=Math.max(
+
+                this.offsetWidth,
+
+                this.offsetHeight
+
+            );
+
+            const rect=this.getBoundingClientRect();
+
+            circle.style.width=size+"px";
+
+            circle.style.height=size+"px";
+
+            circle.style.left=(
+
+                e.clientX-rect.left-size/2
+
+            )+"px";
+
+            circle.style.top=(
+
+                e.clientY-rect.top-size/2
+
+            )+"px";
+
+            circle.className="ripple";
+
+            this.appendChild(circle);
+
+            setTimeout(()=>{
+
+                circle.remove();
+
+            },600);
+
+        });
+
+    });
+
+}
+/* =========================================================
+   BACK TO TOP
+========================================================= */
+
+function initBackToTop(){
+
+    const button=document.querySelector(".back-to-top");
+
+    if(!button) return;
+
+    const toggleButton=()=>{
+
+        if(window.scrollY>400){
+
+            button.classList.add("show");
+
+        }else{
+
+            button.classList.remove("show");
 
         }
-
 
     };
 
+    toggleButton();
 
-    update();
-
-
-};
-
-
-
-
-
-const observerCounter =
-new IntersectionObserver(entries=>{
-
-
-    entries.forEach(entry=>{
-
-
-        if(entry.isIntersecting){
-
-
-            startCounter(
-                entry.target
-            );
-
-
-            observerCounter.unobserve(
-                entry.target
-            );
-
-
-        }
-
-
+    window.addEventListener("scroll",toggleButton,{
+        passive:true
     });
 
+    button.addEventListener("click",()=>{
 
-},{
-    threshold:.5
-});
+        window.scrollTo({
 
+            top:0,
 
+            behavior:"smooth"
 
-counters.forEach(counter=>{
+        });
 
-
-    observerCounter.observe(counter);
-
-
-});
-
-
-
-
-
-
-
-/* =========================================================
-   LIVE ONLINE USERS
-========================================================= */
-
-
-const liveUsers =
-document.getElementById("live-users");
-
-
-if(liveUsers){
-
-
-    let users =
-    Number(
-        liveUsers.textContent.replace(",","")
-    );
-
-
-    setInterval(()=>{
-
-
-        const change =
-        Math.floor(
-            Math.random()*15
-        ) - 7;
-
-
-
-        users += change;
-
-
-
-        if(users < 1000){
-
-            users = 1000;
-
-        }
-
-
-
-        liveUsers.textContent =
-        formatter.format(users);
-
-
-
-    },4000);
-
+    });
 
 }
 
 
 
-
-
-
 /* =========================================================
-   ACTIVE MENU ON SCROLL
+   TYPING EFFECT
 ========================================================= */
 
+function initTyping(){
 
-const sections =
-document.querySelectorAll("section[id]");
+    const element=document.querySelector("[data-typing]");
 
+    if(!element) return;
 
-const navLinks =
-document.querySelectorAll(".nav-link");
+    const text=element.dataset.typing;
 
+    let index=0;
 
-
-window.addEventListener("scroll",()=>{
-
-
-    let current="";
-
-
-    sections.forEach(section=>{
-
-
-        const top =
-        section.offsetTop - 150;
-
-
-        const height =
-        section.offsetHeight;
-
-
-        if(
-            window.scrollY >= top &&
-            window.scrollY < top+height
-        ){
-
-            current =
-            section.getAttribute("id");
-
-        }
-
-
-    });
-
-
-
-    navLinks.forEach(link=>{
-
-
-        link.classList.remove("active");
-
-
-        if(
-            link.getAttribute("href")
-            === "#"+current
-        ){
-
-            link.classList.add("active");
-
-        }
-
-
-    });
-
-
-
-});
-
-
-
-
-
-
-/* =========================================================
-   SCROLL REVEAL
-========================================================= */
-
-
-const revealElements =
-document.querySelectorAll(
-`
-.feature-card,
-.stat-card,
-.payment-card,
-.security-card,
-.step-card,
-.glass-card
-`
-);
-
-
-
-const revealObserver =
-new IntersectionObserver(entries=>{
-
-
-    entries.forEach(entry=>{
-
-
-        if(entry.isIntersecting){
-
-
-            entry.target.classList.add(
-                "show"
-            );
-
-
-        }
-
-
-    });
-
-
-},{
-    threshold:.15
-});
-
-
-
-revealElements.forEach(el=>{
-
-
-    el.classList.add("reveal");
-
-    revealObserver.observe(el);
-
-
-});
-
-
-
-
-
-
-
-/* =========================================================
-   SNOW EFFECT
-========================================================= */
-
-
-const snowContainer =
-document.querySelector(
-".snow-container"
-);
-
-
-
-if(snowContainer){
-
-
-    for(let i=0;i<80;i++){
-
-
-        const snow =
-        document.createElement("span");
-
-
-        snow.className="snow";
-
-
-        snow.style.left =
-        Math.random()*100+"%";
-
-
-        snow.style.animationDuration =
-        (5+
-        Math.random()*10)
-        +"s";
-
-
-
-        snow.style.animationDelay =
-        Math.random()*10+"s";
-
-
-
-        snow.style.opacity =
-        Math.random();
-
-
-
-        snowContainer.appendChild(
-            snow
-        );
-
-
-    }
-
-
-}
-
-
-
-
-
-
-/* =========================================================
-   PARALLAX BACKGROUND
-========================================================= */
-
-
-const bg =
-document.querySelector(".animated-bg");
-
-
-window.addEventListener("mousemove",e=>{
-
-
-    if(!bg)return;
-
-
-    const x =
-    (e.clientX/window.innerWidth-.5)
-    *30;
-
-
-    const y =
-    (e.clientY/window.innerHeight-.5)
-    *30;
-
-
-
-    bg.style.transform =
-    `
-    translate(${x}px,${y}px)
-    `;
-
-
-});
-
-
-
-
-
-
-/* =========================================================
-   DASHBOARD FLOAT RANDOM
-========================================================= */
-
-
-const dashboard =
-document.querySelector(
-".dashboard-card"
-);
-
-
-
-if(dashboard){
-
-
-    let angle=0;
-
-
-    setInterval(()=>{
-
-
-        angle += .02;
-
-
-        dashboard.style.transform =
-        `
-        translateY(${Math.sin(angle)*8}px)
-        `;
-
-
-    },50);
-
-
-}
-
-
-
-
-
-
-/* =========================================================
-   TYPING EFFECT OPTIONAL
-========================================================= */
-
-
-const typing =
-document.querySelector(
-".typing"
-);
-
-
-
-if(typing){
-
-
-    const text =
-    typing.dataset.text ||
-    typing.textContent;
-
-
-    typing.textContent="";
-
-
-    let i=0;
-
-
+    element.textContent="";
 
     function type(){
 
+        if(index<text.length){
 
-        if(i < text.length){
+            element.textContent+=text.charAt(index);
 
+            index++;
 
-            typing.textContent +=
-            text.charAt(i);
-
-
-            i++;
-
-
-            setTimeout(type,70);
-
+            setTimeout(type,40);
 
         }
 
-
     }
-
 
     type();
 
+}
+
+
+
+/* =========================================================
+   LIVE COUNTER
+========================================================= */
+
+function initLiveCounter(){
+
+    document.querySelectorAll("[data-live]").forEach(item=>{
+
+        let value=parseInt(item.dataset.live)||0;
+
+        item.textContent=value.toLocaleString();
+
+        setInterval(()=>{
+
+            value+=Math.floor(Math.random()*3);
+
+            item.textContent=value.toLocaleString();
+
+        },5000);
+
+    });
+
+}
+
+
+
+/* =========================================================
+   LOADING SCREEN
+========================================================= */
+
+function initLoading(){
+
+    const loader=document.querySelector(".loading-screen");
+
+    if(!loader) return;
+
+    window.addEventListener("load",()=>{
+
+        loader.classList.add("hide");
+
+        setTimeout(()=>{
+
+            loader.remove();
+
+        },700);
+
+    });
+
+}
+
+
+
+/* =========================================================
+   SCROLL PROGRESS BAR
+========================================================= */
+
+function initScrollProgress(){
+
+    const bar=document.querySelector(".scroll-progress");
+
+    if(!bar) return;
+
+    const update=()=>{
+
+        const height=
+
+            document.documentElement.scrollHeight-
+
+            window.innerHeight;
+
+        const progress=
+
+            (window.scrollY/height)*100;
+
+        bar.style.width=progress+"%";
+
+    };
+
+    update();
+
+    window.addEventListener("scroll",update,{
+        passive:true
+    });
+
+}
+
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+    initBackToTop();
+
+    initTyping();
+
+    initLiveCounter();
+
+    initLoading();
+
+    initScrollProgress();
+
+});
+/* =========================================================
+   PARALLAX EFFECT
+========================================================= */
+
+function initParallax(){
+
+    const items=document.querySelectorAll(".parallax");
+
+    if(!items.length) return;
+
+    window.addEventListener("mousemove",(e)=>{
+
+        const x=(e.clientX/window.innerWidth-.5)*20;
+        const y=(e.clientY/window.innerHeight-.5)*20;
+
+        items.forEach(item=>{
+
+            const speed=item.dataset.speed||1;
+
+            item.style.transform=
+                `translate(${x*speed}px,${y*speed}px)`;
+
+        });
+
+    });
 
 }
 
 
 
 
-});
-
 /* =========================================================
-   PARTICLES BACKGROUND
+   FLOATING CARD
 ========================================================= */
 
+function initFloatingCards(){
 
-if(typeof particlesJS !== "undefined"){
+    document.querySelectorAll(
 
+        ".feature-card,.stat-card,.dashboard-card,.payment-card"
 
-    const particleLayer =
-    document.createElement("div");
+    ).forEach(card=>{
 
+        card.addEventListener("mousemove",(e)=>{
 
-    particleLayer.id =
-    "particles-js";
+            const rect=card.getBoundingClientRect();
 
+            const x=e.clientX-rect.left;
+            const y=e.clientY-rect.top;
 
-    particleLayer.style.position =
-    "fixed";
+            const rotateY=((x/rect.width)-0.5)*12;
+            const rotateX=((y/rect.height)-0.5)*-12;
 
+            card.style.transform=
 
-    particleLayer.style.inset =
-    "0";
-
-
-    particleLayer.style.zIndex =
-    "-2";
-
-
-    particleLayer.style.pointerEvents =
-    "none";
-
-
-    document.body.prepend(
-        particleLayer
-    );
-
-
-
-    particlesJS("particles-js",{
-
-
-        particles:{
-
-
-            number:{
-
-
-                value:65,
-
-
-                density:{
-
-
-                    enable:true,
-
-
-                    value_area:900
-
-
-                }
-
-
-            },
-
-
-            color:{
-
-
-                value:"#1e88ff"
-
-
-            },
-
-
-            shape:{
-
-
-                type:"circle"
-
-
-            },
-
-
-            opacity:{
-
-
-                value:.35,
-
-
-                random:true
-
-
-            },
-
-
-            size:{
-
-
-                value:3,
-
-
-                random:true
-
-
-            },
-
-
-            line_linked:{
-
-
-                enable:true,
-
-
-                distance:140,
-
-
-                color:"#6c63ff",
-
-
-                opacity:.25,
-
-
-                width:1
-
-
-            },
-
-
-            move:{
-
-
-                enable:true,
-
-
-                speed:1.5,
-
-
-                direction:"none",
-
-
-                random:true,
-
-
-                straight:false,
-
-
-                out_mode:"out",
-
-
-                bounce:false
-
-
-            }
-
-
-        },
-
-
-
-        interactivity:{
-
-
-            detect_on:"canvas",
-
-
-            events:{
-
-
-                onhover:{
-
-
-                    enable:true,
-
-
-                    mode:"grab"
-
-
-                },
-
-
-                onclick:{
-
-
-                    enable:true,
-
-
-                    mode:"push"
-
-
-                }
-
-
-            },
-
-
-
-            modes:{
-
-
-                grab:{
-
-
-                    distance:180,
-
-
-                    line_linked:{
-
-
-                        opacity:.6
-
-
-                    }
-
-
-                },
-
-
-                push:{
-
-
-                    particles_nb:4
-
-
-                }
-
-
-            }
-
-
-        },
-
-
-
-        retina_detect:true
-
-
-    });
-
-
-}
-/* =========================================================
-   3D CARD TILT
-========================================================= */
-
-
-if(window.innerWidth > 768){
-
-
-const tiltCards =
-document.querySelectorAll(
-`
-.feature-card,
-.stat-card,
-.payment-card,
-.security-card
-`
-);
-
-
-
-tiltCards.forEach(card=>{
-
-
-    card.addEventListener(
-    "mousemove",
-    e=>{
-
-
-        const rect =
-        card.getBoundingClientRect();
-
-
-        const x =
-        e.clientX - rect.left;
-
-
-        const y =
-        e.clientY - rect.top;
-
-
-
-        const rotateY =
-        ((x / rect.width)-.5)*12;
-
-
-        const rotateX =
-        ((y / rect.height)-.5)*-12;
-
-
-
-        card.style.transform =
-        `
-        perspective(900px)
-        rotateX(${rotateX}deg)
-        rotateY(${rotateY}deg)
-        translateY(-8px)
-        `;
-
-
-    });
-
-
-
-    card.addEventListener(
-    "mouseleave",
-    ()=>{
-
-
-        card.style.transform="";
-
-
-    });
-
-
-});
-
-
-}
-/* =========================================================
-   BUTTON RIPPLE EFFECT
-========================================================= */
-
-
-document.querySelectorAll(".btn")
-.forEach(button=>{
-
-
-button.addEventListener("click",function(e){
-
-
-    const ripple =
-    document.createElement("span");
-
-
-    const rect =
-    this.getBoundingClientRect();
-
-
-
-    ripple.style.position="absolute";
-
-    ripple.style.width="10px";
-
-    ripple.style.height="10px";
-
-    ripple.style.borderRadius="50%";
-
-    ripple.style.background=
-    "rgba(255,255,255,.5)";
-
-    ripple.style.left=
-    (e.clientX-rect.left)+"px";
-
-    ripple.style.top=
-    (e.clientY-rect.top)+"px";
-
-    ripple.style.transform=
-    "scale(0)";
-
-    ripple.style.animation=
-    "ripple .6s linear";
-
-
-
-    this.style.position="relative";
-
-    this.style.overflow="hidden";
-
-
-    this.appendChild(ripple);
-
-
-
-    setTimeout(()=>{
-
-
-        ripple.remove();
-
-
-    },600);
-
-
-
-});
-
-
-});
-/* =========================================================
-   PERFORMANCE OPTIMIZATION
-   CLICK2PAY
-========================================================= */
-
-
-/* =========================
-   DISABLE HEAVY EFFECT LOW DEVICE
-========================= */
-
-
-const isLowDevice =
-navigator.hardwareConcurrency &&
-navigator.hardwareConcurrency <= 4;
-
-
-
-if(isLowDevice || window.innerWidth < 600){
-
-
-    // Kurangi particle
-
-    const particle =
-    document.getElementById(
-        "particles-js"
-    );
-
-
-    if(particle){
-
-        particle.style.display="none";
-
-    }
-
-
-
-    // Disable tilt
-
-    document
-    .querySelectorAll(
-    ".feature-card,.stat-card,.payment-card,.security-card"
-    )
-    .forEach(card=>{
-
-        card.style.transition=".3s";
-
-    });
-
-
-
-}
-
-
-
-
-
-
-
-/* =========================
-   LAZY IMAGE LOADING
-========================= */
-
-
-document
-.querySelectorAll("img")
-.forEach(img=>{
-
-
-    img.loading="lazy";
-
-
-});
-
-
-
-
-
-
-
-/* =========================
-   OPTIMIZE SCROLL EVENT
-========================= */
-
-
-let ticking=false;
-
-
-
-window.addEventListener(
-"scroll",
-()=>{
-
-
-    if(!ticking){
-
-
-        window.requestAnimationFrame(()=>{
-
-
-            ticking=false;
-
+                `perspective(900px)
+                 rotateX(${rotateX}deg)
+                 rotateY(${rotateY}deg)
+                 translateY(-8px)`;
 
         });
 
 
-        ticking=true;
+        card.addEventListener("mouseleave",()=>{
 
+            card.style.transform="";
+
+        });
+
+    });
+
+}
+
+
+
+
+/* =========================================================
+   LAZY IMAGE
+========================================================= */
+
+function initLazyImages(){
+
+    const images=document.querySelectorAll("img[data-src]");
+
+    if(!images.length) return;
+
+    const observer=new IntersectionObserver(entries=>{
+
+        entries.forEach(entry=>{
+
+            if(!entry.isIntersecting) return;
+
+            const img=entry.target;
+
+            img.src=img.dataset.src;
+
+            img.removeAttribute("data-src");
+
+            observer.unobserve(img);
+
+        });
+
+    });
+
+    images.forEach(img=>observer.observe(img));
+
+}
+
+
+
+
+/* =========================================================
+   NUMBER FORMAT
+========================================================= */
+
+function formatNumber(number){
+
+    return new Intl.NumberFormat("id-ID").format(number);
+
+}
+
+
+
+
+/* =========================================================
+   RANDOM ONLINE USER
+========================================================= */
+
+function initOnlineUsers(){
+
+    const el=document.querySelector("[data-online]");
+
+    if(!el) return;
+
+    let value=Number(el.dataset.online)||500;
+
+    el.textContent=formatNumber(value);
+
+    setInterval(()=>{
+
+        value+=Math.floor(Math.random()*8)-3;
+
+        if(value<100) value=100;
+
+        el.textContent=formatNumber(value);
+
+    },4000);
+
+}
+
+
+
+
+/* =========================================================
+   BUTTON LOADING
+========================================================= */
+
+function initButtonLoading(){
+
+    document.querySelectorAll(".btn-loading")
+
+    .forEach(button=>{
+
+        button.addEventListener("click",()=>{
+
+            if(button.disabled) return;
+
+            button.disabled=true;
+
+            const text=button.innerHTML;
+
+            button.innerHTML=
+
+            '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
+
+            setTimeout(()=>{
+
+                button.innerHTML=text;
+
+                button.disabled=false;
+
+            },1800);
+
+        });
+
+    });
+
+}
+
+
+
+
+/* =========================================================
+   PERFORMANCE
+========================================================= */
+
+function initPerformance(){
+
+    if(
+
+        window.matchMedia(
+
+            "(prefers-reduced-motion: reduce)"
+
+        ).matches
+
+    ){
+
+        document.body.classList.add(
+
+            "reduce-motion"
+
+        );
 
     }
 
+}
 
-},
-{
-    passive:true
+
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+document.addEventListener(
+
+    "DOMContentLoaded",
+
+()=>{
+
+    initFloatingCards();
+
+    initLazyImages();
+
+    initOnlineUsers();
+
+    initButtonLoading();
+
+    initPerformance();
+
 });
 
+/* =========================================================
+   PREMIUM EFFECT
+========================================================= */
 
 
+/* =========================
+   MOUSE SPOTLIGHT
+========================= */
 
+function initSpotlight(){
+
+    const light=document.createElement("div");
+
+    light.className="mouse-light";
+
+    document.body.appendChild(light);
+
+    document.addEventListener("mousemove",(e)=>{
+
+        light.style.left=e.clientX+"px";
+        light.style.top=e.clientY+"px";
+
+    },{passive:true});
+
+}
 
 
 
 
 /* =========================
-   MOBILE NAV CLOSE
+   COPY BUTTON
 ========================= */
 
+function initCopyButton(){
 
-const navLinksMobile =
-document.querySelectorAll(
-".navbar-nav .nav-link"
-);
+    document.querySelectorAll("[data-copy]").forEach(btn=>{
+
+        btn.addEventListener("click",async()=>{
+
+            try{
+
+                await navigator.clipboard.writeText(
+
+                    btn.dataset.copy
+
+                );
+
+                showToast("Copied successfully");
+
+            }
+
+            catch(e){
+
+                console.log(e);
+
+            }
+
+        });
+
+    });
+
+}
 
 
 
-const navbarCollapse =
-document.querySelector(
-".navbar-collapse"
-);
 
+/* =========================
+   TOAST
+========================= */
 
+function showToast(message){
 
-navLinksMobile.forEach(link=>{
+    let toast=document.querySelector(".premium-toast");
 
+    if(!toast){
 
-link.addEventListener(
-"click",
-()=>{
+        toast=document.createElement("div");
 
+        toast.className="premium-toast";
 
-    if(
-    window.innerWidth < 992 &&
-    navbarCollapse.classList.contains("show")
-    ){
-
-
-        document
-        .querySelector(
-        ".navbar-toggler"
-        )
-        .click();
-
+        document.body.appendChild(toast);
 
     }
 
+    toast.textContent=message;
 
-});
+    toast.classList.add("show");
+
+    clearTimeout(toast.timer);
+
+    toast.timer=setTimeout(()=>{
+
+        toast.classList.remove("show");
+
+    },2500);
+
+}
 
 
-});
 
 
+/* =========================
+   AUTO ACTIVE MENU
+========================= */
 
+function initActiveMenu(){
 
+    const sections=document.querySelectorAll("section[id]");
+
+    const links=document.querySelectorAll(".nav-link");
+
+    if(!sections.length) return;
+
+    window.addEventListener("scroll",()=>{
+
+        let current="";
+
+        sections.forEach(section=>{
+
+            if(
+
+                pageYOffset>=section.offsetTop-120
+
+            ){
+
+                current=section.id;
+
+            }
+
+        });
+
+        links.forEach(link=>{
+
+            link.classList.remove("active");
+
+            if(
+
+                link.getAttribute("href")==="#"+current
+
+            ){
+
+                link.classList.add("active");
+
+            }
+
+        });
+
+    },{
+
+        passive:true
+
+    });
+
+}
 
 
 
@@ -1192,66 +862,93 @@ link.addEventListener(
    AUTO YEAR
 ========================= */
 
+function initYear(){
 
-const footerYear =
-document.getElementById(
-"year"
-);
+    const year=document.querySelector("[data-year]");
 
+    if(year){
 
+        year.textContent=
 
-if(footerYear){
+        new Date().getFullYear();
 
-    footerYear.innerHTML =
-    new Date().getFullYear();
+    }
 
 }
 
 
 
 
+/* =========================
+   DEVICE DETECT
+========================= */
+
+function detectDevice(){
+
+    const mobile=
+
+    /Android|iPhone|iPad|iPod/i
+
+    .test(navigator.userAgent);
+
+    document.body.classList.add(
+
+        mobile ?
+
+        "device-mobile"
+
+        :
+
+        "device-desktop"
+
+    );
+
+}
+
+
 
 
 /* =========================
-   PREVENT HORIZONTAL BUG
+   IMAGE FADE
 ========================= */
 
+function initImageFade(){
 
-document.body.style.overflowX =
-"hidden";
+    document.querySelectorAll("img").forEach(img=>{
 
+        img.addEventListener("load",()=>{
 
+            img.classList.add("loaded");
+
+        });
+
+    });
+
+}
 
 
 
 
 /* =========================
-   NETWORK STATUS
+   INIT
 ========================= */
 
+document.addEventListener(
 
-window.addEventListener(
-"offline",
+    "DOMContentLoaded",
+
 ()=>{
 
+    initSpotlight();
 
-    console.log(
-    "Click2Pay offline mode"
-    );
+    initCopyButton();
 
+    initActiveMenu();
 
-});
+    initYear();
 
+    detectDevice();
 
-
-window.addEventListener(
-"online",
-()=>{
-
-
-    console.log(
-    "Click2Pay online"
-    );
-
+    initImageFade();
 
 });
