@@ -590,7 +590,7 @@ WITHDRAW
 }
 
 /*=========================
-MARQUEE
+PAYMENT MARQUEE
 =========================*/
 
 .marquee{
@@ -603,11 +603,17 @@ MARQUEE
 
     padding:18px 0;
 
-    background:#ffffff;
+    background:#fff;
 
     border-top:1px solid #e5eefc;
 
     border-bottom:1px solid #e5eefc;
+
+}
+
+.marquee + .marquee{
+
+    margin-top:18px;
 
 }
 
@@ -617,11 +623,9 @@ MARQUEE
 
     align-items:center;
 
-    gap:70px;
+    gap:50px;
 
     width:max-content;
-
-    animation:marqueeMove 30s linear infinite;
 
 }
 
@@ -631,6 +635,28 @@ MARQUEE
 
 }
 
+/* Logo */
+
+.marquee-content img{
+
+    height:42px;
+
+    width:auto;
+
+    object-fit:contain;
+
+    transition:.3s;
+
+}
+
+.marquee-content img:hover{
+
+    transform:scale(1.08);
+
+}
+
+/* Jika masih pakai span */
+
 .marquee-content span{
 
     display:flex;
@@ -639,7 +665,7 @@ MARQUEE
 
     gap:10px;
 
-    font-size:20px;
+    font-size:18px;
 
     font-weight:700;
 
@@ -655,7 +681,23 @@ MARQUEE
 
 }
 
-@keyframes marqueeMove{
+/* BANK → KANAN */
+
+.marquee-right .marquee-content{
+
+    animation:marqueeRight 28s linear infinite;
+
+}
+
+/* EWALLET → KIRI */
+
+.marquee-left .marquee-content{
+
+    animation:marqueeLeft 28s linear infinite;
+
+}
+
+@keyframes marqueeLeft{
 
     from{
 
@@ -666,6 +708,22 @@ MARQUEE
     to{
 
         transform:translateX(-50%);
+
+    }
+
+}
+
+@keyframes marqueeRight{
+
+    from{
+
+        transform:translateX(-50%);
+
+    }
+
+    to{
+
+        transform:translateX(0);
 
     }
 
