@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Click2Pay | Earn Shortlink & Sell Link</title>
+
+    <meta name="description"
+          content="Click2Pay adalah platform Earn Shortlink dan Sell Link dengan CPM tinggi, pembayaran cepat, aman, dan mudah digunakan di Android maupun Komputer.">
+
+    <meta name="keywords"
+          content="Click2Pay, Earn Shortlink, Sell Link, CPM Tinggi, Monetize Link">
+
+    <meta name="theme-color"
+          content="#1e88ff">
+
+    <meta name="author"
+          content="Click2Pay">
+
+    <meta name="robots"
+          content="index, follow">
+
+    <!-- Google Font -->
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <!-- Bootstrap -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <!-- Font Awesome -->
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <!-- Animate On Scroll -->
+
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css"
+          rel="stylesheet">
+
+    <!-- CSS -->
+
+    <link rel="stylesheet"
+          href="assets/css/style.css">
+
+</head>
+
+<body>
+
+<!-- ==========================
+BACKGROUND EFFECT
+========================== -->
+
+<div class="animated-bg"></div>
+
+<div class="snow-container"></div>
+
+<div class="stars-container"></div>
+
+<!-- ==========================
+NAVBAR
+========================== -->
+
+<nav class="navbar navbar-expand-lg fixed-top glass-navbar">
+
+<div class="container">
+
+<a class="navbar-brand logo fw-bold"
+   href="#">
+
+<i class="fa-solid fa-bolt text-primary"></i>
+
+<span>
+
+Click2Pay
+
+</span>
+
+</a>
+
+<button class="navbar-toggler"
+
+type="button"
+
+data-bs-toggle="collapse"
+
+data-bs-target="#navbar">
+
+<span class="navbar-toggler-icon"></span>
+
+</button>
+
+<div class="collapse navbar-collapse"
+
+id="navbar">
+
+<ul class="navbar-nav ms-auto align-items-lg-center">
+
+<li class="nav-item">
+
+<a class="nav-link"
+
+href="#home">
+
+Home
+
+</a>
+
+</li>
+
+<li class="nav-item">
+
+<a class="nav-link"
+
+href="#features">
+
+Features
+
+</a>
+
+</li>
+
+<li class="nav-item">
+
+<a class="nav-link"
+
+href="#withdraw">
+
+Withdraw
+
+</a>
+
+</li>
+
+<li class="nav-item">
+
+<a class="nav-link"
+
+href="#security">
+
+Security
+
+</a>
+
+</li>
+
+<li class="nav-item">
+
+<a class="nav-link"
+
+href="#contact">
+
+Contact
+
+</a>
+
+</li>
+
+<li class="nav-item ms-lg-3">
+
+<a href="/login"
+
+class="btn btn-outline-primary rounded-pill px-4">
+
+<i class="fa-solid fa-right-to-bracket me-2"></i>
+
+Login
+
+</a>
+
+</li>
+
+<li class="nav-item ms-lg-2">
+
+<a href="/register"
+
+class="btn btn-primary rounded-pill px-4 shadow">
+
+<i class="fa-solid fa-user-plus me-2"></i>
+
+Register
+
+</a>
+
+</li>
+
+</ul>
+
+</div>
+
+</div>
+
+</nav>
+
+<!-- ==========================
+HERO
+========================== -->
+
+<section id="home"
+
+class="hero-section">
+
+<div class="container">
+
+<div class="row align-items-center min-vh-100">
+
+<!-- ==========================
+LEFT CONTENT
+========================== -->
+
+<div class="col-lg-6" data-aos="fade-right">
+
+    <span class="hero-badge">
+
+        <i class="fa-solid fa-fire"></i>
+
+        CPM Tinggi • Withdraw Cepat • Aman
+
+    </span>
+
+    <h1 class="hero-title mt-4">
+
+        Hasilkan Uang
+
+        <span class="text-primary">
+
+            Dari Setiap Link
+
+        </span>
+
+        Yang Kamu Bagikan
+
+    </h1>
+
+    <p class="hero-text mt-4">
+
+        Click2Pay merupakan platform Earn Shortlink dan Sell Link
+        dengan sistem pembayaran cepat, keamanan tinggi,
+        dashboard modern serta dapat digunakan di Android,
+        Tablet maupun Desktop.
+
+    </p>
+
+    <div class="hero-button mt-5">
+
+        <a href="/login"
+           class="btn btn-primary btn-lg rounded-pill px-5 me-3">
+
+            <i class="fa-solid fa-right-to-bracket me-2"></i>
+
+            Login
+
+        </a>
+
+        <a href="/register"
+           class="btn btn-outline-primary btn-lg rounded-pill px-5">
+
+            <i class="fa-solid fa-user-plus me-2"></i>
+
+            Register
+
+        </a>
+
+    </div>
+
+    <div class="row mt-5">
+
+        <div class="col-6 col-md-3">
+
+            <div class="mini-counter">
+
+                <h2 class="counter"
+                    data-target="50000">
+
+                    0
+
+                </h2>
+
+                <small>Total User</small>
+
+            </div>
+
+        </div>
+
+        <div class="col-6 col-md-3">
+
+            <div class="mini-counter">
+
+                <h2 class="counter"
+                    data-target="900000">
+
+                    0
+
+                </h2>
+
+                <small>Total Link</small>
+
+            </div>
+
+        </div>
+
+        <div class="col-6 col-md-3 mt-4 mt-md-0">
+
+            <div class="mini-counter">
+
+                <h2 class="counter"
+                    data-target="750">
+
+                    0
+
+                </h2>
+
+                <small>Online</small>
+
+            </div>
+
+        </div>
+
+        <div class="col-6 col-md-3 mt-4 mt-md-0">
+
+            <div class="mini-counter">
+
+                <h2>
+
+                    Rp
+
+                    <span class="counter"
+                          data-target="250">
+
+                        0
+
+                    </span>
+
+                    M
+
+                </h2>
+
+                <small>Total Paid</small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================
+RIGHT CONTENT
+========================== -->
+
+<div class="col-lg-6 mt-5 mt-lg-0"
+     data-aos="fade-left">
+
+    <div class="dashboard-card">
+
+        <div class="dashboard-header">
+
+            <div class="dashboard-dot bg-danger"></div>
+
+            <div class="dashboard-dot bg-warning"></div>
+
+            <div class="dashboard-dot bg-success"></div>
+
+        </div>
+
+        <div class="dashboard-body">
+
+            <div class="dashboard-item">
+
+                <div>
+
+                    <h6>Total Balance</h6>
+
+                    <h3 class="text-primary">
+
+                        Rp 12.580.000
+
+                    </h3>
+
+                </div>
+
+                <i class="fa-solid fa-wallet fa-2x text-primary"></i>
+
+            </div>
+
+            <div class="dashboard-item mt-4">
+
+                <div>
+
+                    <h6>Today's Earnings</h6>
+
+                    <h3 class="text-success">
+
+                        + Rp 785.000
+
+                    </h3>
+
+                </div>
+
+                <i class="fa-solid fa-arrow-trend-up fa-2x text-success"></i>
+
+            </div>
+
+            <div class="dashboard-item mt-4">
+
+                <div>
+
+                    <h6>Withdraw Status</h6>
+
+                    <h3 class="text-info">
+
+                        Success
+
+                    </h3>
+
+                </div>
+
+                <i class="fa-solid fa-circle-check fa-2x text-info"></i>
+
+            </div>
+
+            <div class="progress mt-4"
+                 style="height:12px;">
+
+                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                     style="width:92%">
+
+                </div>
+
+            </div>
+
+            <div class="row text-center mt-4">
+
+                <div class="col">
+
+                    <i class="fa-solid fa-link text-primary fa-2x"></i>
+
+                    <p class="mt-2">
+
+                        Sell Link
+
+                    </p>
+
+                </div>
+
+                <div class="col">
+
+                    <i class="fa-solid fa-money-bill-wave text-success fa-2x"></i>
+
+                    <p class="mt-2">
+
+                        Earn
+
+                    </p>
+
+                </div>
+
+                <div class="col">
+
+                    <i class="fa-solid fa-shield-halved text-info fa-2x"></i>
+
+                    <p class="mt-2">
+
+                        Secure
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ==========================
+STATISTICS
+========================== -->
+
+<section id="statistics" class="py-5">
+
+    <div class="container">
+
+        <div class="text-center mb-5" data-aos="fade-up">
+
+            <span class="hero-badge">
+
+                <i class="fa-solid fa-chart-line"></i>
+
+                Realtime Statistics
+
+            </span>
+
+            <h2 class="fw-bold mt-4">
+
+                Platform Yang Terus Berkembang
+
+            </h2>
+
+            <p class="text-muted">
+
+                Ribuan pengguna telah menghasilkan uang melalui
+                Click2Pay setiap harinya.
+
+            </p>
+
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon bg-primary">
+
+                        <i class="fa-solid fa-users"></i>
+
+                    </div>
+
+                    <h2 class="counter"
+                        data-target="58642">
+
+                        0
+
+                    </h2>
+
+                    <h5>Total Member</h5>
+
+                    <small class="text-success">
+
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+
+                        +18% Bulan Ini
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon bg-success">
+
+                        <i class="fa-solid fa-link"></i>
+
+                    </div>
+
+                    <h2 class="counter"
+                        data-target="2849561">
+
+                        0
+
+                    </h2>
+
+                    <h5>Total Link</h5>
+
+                    <small class="text-success">
+
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+
+                        Update Realtime
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon bg-warning">
+
+                        <i class="fa-solid fa-wallet"></i>
+
+                    </div>
+
+                    <h2>
+
+                        Rp
+
+                        <span class="counter"
+                              data-target="950">
+
+                            0
+
+                        </span>
+
+                        M
+
+                    </h2>
+
+                    <h5>Total Withdraw</h5>
+
+                    <small class="text-success">
+
+                        <i class="fa-solid fa-circle-check"></i>
+
+                        Success
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon bg-danger">
+
+                        <i class="fa-solid fa-user-check"></i>
+
+                    </div>
+
+                    <h2 class="counter"
+                        data-target="1825">
+
+                        0
+
+                    </h2>
+
+                    <h5>User Online</h5>
+
+                    <small class="text-danger">
+
+                        <i class="fa-solid fa-circle"></i>
+
+                        Live
+
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ==========================
+CPM SECTION
+========================== -->
+
+<section id="features" class="py-5">
+
+    <div class="container">
+
+        <div class="row align-items-center">
+
+            <div class="col-lg-6" data-aos="fade-right">
+
+                <span class="hero-badge">
+
+                    <i class="fa-solid fa-crown"></i>
+
+                    CPM Tertinggi
+
+                </span>
+
+                <h2 class="fw-bold mt-4">
+
+                    Mengapa Memilih
+
+                    <span class="text-primary">
+
+                        Click2Pay
+
+                    </span>
+
+                    ?
+
+                </h2>
+
+                <p class="text-muted mt-4">
+
+                    Click2Pay menghadirkan sistem Earn Shortlink dan Sell Link
+                    dengan CPM tinggi, proses cepat,
+                    keamanan maksimal serta tampilan modern yang nyaman
+                    digunakan di Android maupun Desktop.
+
+                </p>
+
+                <div class="row mt-4">
+
+                    <div class="col-6 mb-3">
+
+                        <i class="fa-solid fa-circle-check text-primary me-2"></i>
+
+                        CPM Tinggi
+
+                    </div>
+
+                    <div class="col-6 mb-3">
+
+                        <i class="fa-solid fa-circle-check text-primary me-2"></i>
+
+                        Withdraw Cepat
+
+                    </div>
+
+                    <div class="col-6 mb-3">
+
+                        <i class="fa-solid fa-circle-check text-primary me-2"></i>
+
+                        Sell Link
+
+                    </div>
+
+                    <div class="col-6 mb-3">
+
+                        <i class="fa-solid fa-circle-check text-primary me-2"></i>
+
+                        Earn Shortlink
+
+                    </div>
+
+                    <div class="col-6 mb-3">
+
+                        <i class="fa-solid fa-circle-check text-primary me-2"></i>
+
+                        Responsive
+
+                    </div>
+
+                    <div class="col-6 mb-3">
+
+                        <i class="fa-solid fa-circle-check text-primary me-2"></i>
+
+                        Cloud Security
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-6" data-aos="fade-left">
+
+                <div class="feature-box">
+
+                    <div class="feature-item">
+
+                        <i class="fa-solid fa-rocket text-primary"></i>
+
+                        <span>Server Berkecepatan Tinggi</span>
+
+                    </div>
+
+                    <div class="feature-item">
+
+                        <i class="fa-solid fa-shield-halved text-success"></i>
+
+                        <span>Keamanan Data Maksimal</span>
+
+                    </div>
+
+                    <div class="feature-item">
+
+                        <i class="fa-solid fa-mobile-screen-button text-info"></i>
+
+                        <span>Support Android & iPhone</span>
+
+                    </div>
+
+                    <div class="feature-item">
+
+                        <i class="fa-solid fa-desktop text-warning"></i>
+
+                        <span>Support Desktop</span>
+
+                    </div>
+
+                    <div class="feature-item">
+
+                        <i class="fa-solid fa-money-bill-transfer text-danger"></i>
+
+                        <span>Pembayaran Otomatis</span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+    <!-- ==========================
+WITHDRAW
+========================== -->
+
+<section id="withdraw" class="py-5 bg-light">
+
+    <div class="container">
+
+        <div class="text-center mb-5" data-aos="fade-up">
+
+            <span class="hero-badge">
+
+                <i class="fa-solid fa-wallet"></i>
+
+                Fast Withdrawal
+
+            </span>
+
+            <h2 class="fw-bold mt-4">
+
+                Penarikan Cepat
+
+                <span class="text-primary">
+
+                    Real Fast Response
+
+                </span>
+
+            </h2>
+
+            <p class="text-muted">
+
+                Semua permintaan withdraw diproses secepat mungkin
+                dengan sistem otomatis sehingga lebih cepat, aman
+                dan transparan.
+
+            </p>
+
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="step-card">
+
+                    <div class="step-icon bg-primary">
+
+                        <i class="fa-solid fa-file-circle-plus"></i>
+
+                    </div>
+
+                    <h5 class="mt-4">
+
+                        Request
+
+                    </h5>
+
+                    <p class="text-muted">
+
+                        User mengirim permintaan withdraw.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="step-card">
+
+                    <div class="step-icon bg-warning">
+
+                        <i class="fa-solid fa-gears"></i>
+
+                    </div>
+
+                    <h5 class="mt-4">
+
+                        Verification
+
+                    </h5>
+
+                    <p class="text-muted">
+
+                        Sistem memverifikasi saldo dan akun.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="step-card">
+
+                    <div class="step-icon bg-info">
+
+                        <i class="fa-solid fa-money-bill-transfer"></i>
+
+                    </div>
+
+                    <h5 class="mt-4">
+
+                        Transfer
+
+                    </h5>
+
+                    <p class="text-muted">
+
+                        Dana langsung dikirim ke rekening atau e-wallet.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="step-card">
+
+                    <div class="step-icon bg-success">
+
+                        <i class="fa-solid fa-circle-check"></i>
+
+                    </div>
+
+                    <h5 class="mt-4">
+
+                        Success
+
+                    </h5>
+
+                    <p class="text-muted">
+
+                        Withdraw berhasil diterima pengguna.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ==========================
+BANK & EWALLET
+========================== -->
+
+<section id="payment" class="py-5">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="hero-badge">
+
+                <i class="fa-solid fa-building-columns"></i>
+
+                Supported Payment
+
+            </span>
+
+            <h2 class="fw-bold mt-4">
+
+                Mendukung Semua Bank & E-Wallet
+
+            </h2>
+
+            <p class="text-muted">
+
+                Penarikan tersedia ke berbagai bank dan dompet digital.
+
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="marquee">
+
+        <div class="marquee-content">
+
+            <span><i class="fa-solid fa-building-columns text-primary"></i> BCA</span>
+
+            <span><i class="fa-solid fa-building-columns text-primary"></i> BRI</span>
+
+            <span><i class="fa-solid fa-building-columns text-primary"></i> Mandiri</span>
+
+            <span><i class="fa-solid fa-building-columns text-primary"></i> BNI</span>
+
+            <span><i class="fa-solid fa-building-columns text-primary"></i> BSI</span>
+
+            <span><i class="fa-solid fa-building-columns text-primary"></i> CIMB</span>
+
+            <span><i class="fa-solid fa-building-columns text-primary"></i> Danamon</span>
+
+            <span><i class="fa-solid fa-building-columns text-primary"></i> SeaBank</span>
+
+            <span><i class="fa-solid fa-wallet text-info"></i> DANA</span>
+
+            <span><i class="fa-solid fa-wallet text-primary"></i> OVO</span>
+
+            <span><i class="fa-solid fa-wallet text-success"></i> GoPay</span>
+
+            <span><i class="fa-solid fa-wallet text-danger"></i> ShopeePay</span>
+
+            <span><i class="fa-solid fa-wallet text-warning"></i> LinkAja</span>
+
+            <span><i class="fa-solid fa-qrcode"></i> QRIS</span>
+
+            <!-- Ulangi agar marquee tidak putus -->
+
+            <span><i class="fa-solid fa-building-columns text-primary"></i> BCA</span>
+
+            <span><i class="fa-solid fa-building-columns text-primary"></i> BRI</span>
+
+            <span><i class="fa-solid fa-building-columns text-primary"></i> Mandiri</span>
+
+            <span><i class="fa-solid fa-building-columns text-primary"></i> BNI</span>
+
+            <span><i class="fa-solid fa-wallet text-info"></i> DANA</span>
+
+            <span><i class="fa-solid fa-wallet text-success"></i> GoPay</span>
+
+            <span><i class="fa-solid fa-wallet text-primary"></i> OVO</span>
+
+            <span><i class="fa-solid fa-wallet text-danger"></i> ShopeePay</span>
+
+        </div>
+
+    </div>
+
+</section>
+
+    <!-- ==========================
+DEVELOPMENT
+========================== -->
+
+<section id="development" class="py-5">
+
+    <div class="container">
+
+        <div class="text-center mb-5" data-aos="fade-up">
+
+            <span class="hero-badge">
+
+                <i class="fa-solid fa-code"></i>
+
+                Continuous Development
+
+            </span>
+
+            <h2 class="fw-bold mt-4">
+
+                Website Terus Dikembangkan
+
+            </h2>
+
+            <p class="text-muted">
+
+                Click2Pay selalu menghadirkan pembaruan agar performa,
+                keamanan, dan kenyamanan pengguna semakin baik.
+
+            </p>
+
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-lg-4">
+
+                <div class="feature-card">
+
+                    <i class="fa-solid fa-cloud fa-3x text-primary mb-4"></i>
+
+                    <h5>Cloud Technology</h5>
+
+                    <p class="text-muted">
+
+                        Menggunakan teknologi cloud modern sehingga website
+                        stabil, cepat dan mudah diakses dari seluruh dunia.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <div class="feature-card">
+
+                    <i class="fa-solid fa-gauge-high fa-3x text-success mb-4"></i>
+
+                    <h5>High Performance</h5>
+
+                    <p class="text-muted">
+
+                        Optimasi kecepatan loading agar pengalaman pengguna
+                        tetap nyaman di Android maupun Desktop.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <div class="feature-card">
+
+                    <i class="fa-solid fa-arrows-rotate fa-3x text-info mb-4"></i>
+
+                    <h5>Update Berkala</h5>
+
+                    <p class="text-muted">
+
+                        Fitur baru dan peningkatan sistem dilakukan secara
+                        rutin untuk memberikan layanan terbaik.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ==========================
+SECURITY
+========================== -->
+
+<section id="security" class="py-5 bg-light">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="hero-badge">
+
+                <i class="fa-solid fa-shield-halved"></i>
+
+                Security & Privacy
+
+            </span>
+
+            <h2 class="fw-bold mt-4">
+
+                Keamanan dan Privasi Pengguna
+
+            </h2>
+
+            <p class="text-muted">
+
+                Kami menjaga data dan transaksi pengguna dengan sistem
+                keamanan berlapis.
+
+            </p>
+
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="security-card">
+
+                    <i class="fa-solid fa-lock fa-3x text-primary mb-3"></i>
+
+                    <h5>SSL Encryption</h5>
+
+                    <p class="text-muted">
+
+                        Seluruh data dienkripsi menggunakan SSL.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="security-card">
+
+                    <i class="fa-solid fa-user-shield fa-3x text-success mb-3"></i>
+
+                    <h5>Data Privacy</h5>
+
+                    <p class="text-muted">
+
+                        Informasi pengguna dijaga dan tidak dibagikan.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="security-card">
+
+                    <i class="fa-solid fa-server fa-3x text-warning mb-3"></i>
+
+                    <h5>Cloud Server</h5>
+
+                    <p class="text-muted">
+
+                        Infrastruktur server cepat dan stabil.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="security-card">
+
+                    <i class="fa-solid fa-shield-virus fa-3x text-danger mb-3"></i>
+
+                    <h5>Anti Fraud</h5>
+
+                    <p class="text-muted">
+
+                        Sistem mendeteksi aktivitas mencurigakan secara otomatis.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ==========================
+FOOTER
+========================== -->
+
+<footer id="contact" class="footer py-5">
+
+    <div class="container">
+
+        <div class="row">
+
+            <div class="col-lg-4 mb-4">
+
+                <h3 class="fw-bold text-primary">
+
+                    <i class="fa-solid fa-bolt"></i>
+
+                    Click2Pay
+
+                </h3>
+
+                <p class="text-muted mt-3">
+
+                    Platform Earn Shortlink & Sell Link modern dengan
+                    CPM tinggi, pembayaran cepat, aman, dan mudah digunakan
+                    di Android maupun Desktop.
+
+                </p>
+
+            </div>
+
+            <div class="col-lg-2 col-6">
+
+                <h5>Menu</h5>
+
+                <ul class="list-unstyled">
+
+                    <li><a href="#home">Home</a></li>
+
+                    <li><a href="#features">Features</a></li>
+
+                    <li><a href="#withdraw">Withdraw</a></li>
+
+                    <li><a href="#security">Security</a></li>
+
+                </ul>
+
+            </div>
+
+            <div class="col-lg-3 col-6">
+
+                <h5>Support</h5>
+
+                <ul class="list-unstyled">
+
+                    <li><a href="#">Help Center</a></li>
+
+                    <li><a href="#">Privacy Policy</a></li>
+
+                    <li><a href="#">Terms of Service</a></li>
+
+                    <li><a href="#">Contact Us</a></li>
+
+                </ul>
+
+            </div>
+
+            <div class="col-lg-3">
+
+                <h5>Follow Us</h5>
+
+                <div class="d-flex gap-3 mt-3">
+
+                    <a href="#"><i class="fa-brands fa-telegram fa-2x"></i></a>
+
+                    <a href="#"><i class="fa-brands fa-facebook fa-2x"></i></a>
+
+                    <a href="#"><i class="fa-brands fa-instagram fa-2x"></i></a>
+
+                    <a href="#"><i class="fa-brands fa-x-twitter fa-2x"></i></a>
+
+                    <a href="#"><i class="fa-brands fa-discord fa-2x"></i></a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <hr class="my-4">
+
+        <div class="text-center">
+
+            <p class="mb-0">
+
+                © <span id="year"></span> Click2Pay. All Rights Reserved.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</footer>
+
+<!-- Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- AOS -->
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+
+<!-- Particles -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+<!-- Custom JS -->
+<script src="assets/js/app.js"></script>
+
+<script>
+AOS.init({
+    duration: 1000,
+    once: true
+});
+
+document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>
