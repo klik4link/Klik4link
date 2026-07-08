@@ -2,42 +2,64 @@
    CLICK2PAY LOGIN
 ========================================== */
 
+
+const SUPABASE_URL = "https://lprwxtzqrfyicmknxeau.supabase.co/rest/v1/";
+
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwcnd4dHpxcmZ5aWNta254ZWF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MjYyNjQsImV4cCI6MjA5OTEwMjI2NH0.oCK3RT6v0sXHo-bK9u-YbFkJOZi2Q7qmJABkZe1omgg";
+
+
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+
 document.addEventListener("DOMContentLoaded",()=>{
 
+
 document.body.classList.add("loaded");
+
 
 
 /* =========================
    SHOW / HIDE PASSWORD
 ========================= */
 
+
 const toggle=document.getElementById("togglePassword");
-const password=document.getElementById("password");
+const passwordInput=document.getElementById("password");
 
 
-if(toggle && password){
+if(toggle && passwordInput){
 
 toggle.addEventListener("click",()=>{
+
 
 const icon=toggle.querySelector("i");
 
 
-if(password.type==="password"){
+if(passwordInput.type==="password"){
 
-password.type="text";
+passwordInput.type="text";
 
-icon.classList.remove("bi-eye");
-icon.classList.add("bi-eye-slash");
+icon.classList.replace(
+"bi-eye",
+"bi-eye-slash"
+);
 
 
 }else{
 
-password.type="password";
+passwordInput.type="password";
 
-icon.classList.remove("bi-eye-slash");
-icon.classList.add("bi-eye");
+icon.classList.replace(
+"bi-eye-slash",
+"bi-eye"
+);
 
 }
+
 
 });
 
@@ -45,18 +67,23 @@ icon.classList.add("bi-eye");
 
 
 
+
 /* =========================
    LOGIN EMAIL
 ========================= */
+
 
 const form=document.getElementById("loginForm");
 
 
 if(form){
 
-form.addEventListener("submit",(e)=>{
+
+form.addEventListener("submit",async(e)=>{
+
 
 e.preventDefault();
+
 
 
 const token=document.querySelector(
@@ -64,10 +91,11 @@ const token=document.querySelector(
 )?.value;
 
 
+
 if(!token){
 
 showToast(
-"Silakan selesaikan verifikasi Turnstile."
+"Silakan selesaikan verifikasi."
 );
 
 return;
@@ -76,22 +104,112 @@ return;
 
 
 
+
+const email=document.getElementById("email").value.trim();
+
+const password=document.getElementById("password").value;
+
+
+
+if(!email || !password){
+
+showToast(
+"Email dan password wajib diisi."
+);
+
+return;
+
+}
+
+
+
+
 const btn=form.querySelector(
 "button[type='submit']"
 );
+
 
 
 btn.disabled=true;
 
 
 btn.innerHTML=`
+
 <span class="spinner-border spinner-border-sm me-2"></span>
+
 Memproses...
+
 `;
 
 
 
-setTimeout(()=>{
+
+
+/* CEK AKUN */
+
+
+const {data:userCheck,error:userError}=
+
+await supabaseClient
+.from("users")
+.select("id,email")
+.eq("email",email)
+.maybeSingle();
+
+
+
+
+if(!userCheck){
+
+
+showToast(
+"Akun belum terdaftar."
+);
+
+
+resetButton();
+
+return;
+
+}
+
+
+
+
+
+/* LOGIN SUPABASE */
+
+
+const {data,error}=
+
+await supabaseClient.auth.signInWithPassword({
+
+email:email,
+
+password:password
+
+});
+
+
+
+
+
+if(error){
+
+
+showToast(
+"Password salah."
+);
+
+
+resetButton();
+
+return;
+
+}
+
+
+
 
 
 showToast(
@@ -99,31 +217,50 @@ showToast(
 );
 
 
+
+setTimeout(()=>{
+
+
+window.location.href="dashboard.html";
+
+
+},1000);
+
+
+
+
+
+function resetButton(){
+
+
 btn.disabled=false;
 
 
 btn.innerHTML=`
+
 <i class="bi bi-box-arrow-in-right"></i>
+
 Masuk
+
 `;
 
-
-// sementara
-window.location.href="dashboard.html";
-
-
-},1500);
-
-
-
-});
 
 }
 
 
 
+});
+
+
+}
+
+
+
+
+
+
 /* =========================
-   LOGIN GOOGLE
+   GOOGLE LOGIN
 ========================= */
 
 
@@ -132,13 +269,15 @@ const googleBtn=document.getElementById(
 );
 
 
+
 if(googleBtn){
 
 
 googleBtn.addEventListener("click",async()=>{
 
 
-const {data,error}=
+const {error}=
+
 await supabaseClient.auth.signInWithOAuth({
 
 provider:"google",
@@ -146,8 +285,7 @@ provider:"google",
 options:{
 
 redirectTo:
-window.location.origin+
-"/dashboard.html"
+"https://klik-bv1.pages.dev/dashboard.html"
 
 }
 
@@ -162,10 +300,13 @@ showToast(error.message);
 }
 
 
+
 });
 
 
 }
+
+
 
 
 
@@ -217,6 +358,7 @@ toast.remove();
 
 
 }
+
 
 
 });
