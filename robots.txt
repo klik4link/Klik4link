@@ -1,0 +1,6 @@
+User-agent: *
+
+Allow: /
+
+Sitemap:
+https://click2pay.com/sitemap.xml
