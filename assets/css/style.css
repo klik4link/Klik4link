@@ -3506,3 +3506,900 @@ body.loaded{
 
 
 }
+
+/* =========================================================
+   FINAL DEVICE RESPONSIVE FIX
+   ANDROID + TABLET + LAPTOP + DESKTOP
+========================================================= */
+
+
+/* DESKTOP BESAR
+   1440px ke atas
+*/
+@media (min-width:1440px){
+
+    .container{
+
+        max-width:1320px;
+
+    }
+
+
+    .hero-title{
+
+        font-size:78px;
+
+    }
+
+
+    .hero-text{
+
+        font-size:20px;
+
+    }
+
+
+    .dashboard-card{
+
+        transform:scale(1.03);
+
+    }
+
+}
+
+
+
+
+
+/* LAPTOP
+   992px - 1439px
+*/
+@media (min-width:992px) and (max-width:1439px){
+
+    .hero-title{
+
+        font-size:58px;
+
+    }
+
+
+    .dashboard-body{
+
+        padding:25px;
+
+    }
+
+
+    .feature-card{
+
+        padding:30px;
+
+    }
+
+}
+
+
+
+
+
+/* TABLET
+   768px - 991px
+*/
+@media (max-width:991px){
+
+    .navbar-collapse{
+
+        background:
+
+        rgba(255,255,255,.95);
+
+
+        padding:20px;
+
+
+        border-radius:20px;
+
+
+        margin-top:15px;
+
+
+        box-shadow:
+
+        0 20px 40px rgba(15,23,42,.12);
+
+    }
+
+
+    .nav-link{
+
+        padding:12px;
+
+    }
+
+
+
+    .hero-section{
+
+        padding-top:120px;
+
+    }
+
+
+
+    .hero-title{
+
+        font-size:45px;
+
+    }
+
+
+
+    .dashboard-card{
+
+        margin-top:40px;
+
+    }
+
+
+}
+
+
+
+
+
+/* ANDROID NORMAL
+   481px - 767px
+*/
+@media (max-width:767px){
+
+
+    body{
+
+        overflow-x:hidden;
+
+    }
+
+
+    .container{
+
+        width:100%;
+
+        padding-left:18px;
+
+        padding-right:18px;
+
+    }
+
+
+
+    .hero-title{
+
+        font-size:
+
+        clamp(32px,8vw,42px);
+
+    }
+
+
+
+    .hero-text{
+
+        font-size:15px;
+
+    }
+
+
+
+    .hero-section{
+
+        text-align:center;
+
+    }
+
+
+
+    .hero-section .btn{
+
+        width:100%;
+
+    }
+
+
+
+    .mini-counter{
+
+        margin-bottom:15px;
+
+    }
+
+
+
+    .dashboard-item{
+
+        flex-direction:column;
+
+        text-align:center;
+
+    }
+
+
+
+    .stat-card h2{
+
+        font-size:30px;
+
+    }
+
+
+
+    .cta-card{
+
+        padding:40px 20px;
+
+    }
+
+
+
+}
+
+
+
+
+
+/* HP KECIL
+   320px - 480px
+*/
+@media(max-width:480px){
+
+
+    .logo{
+
+        font-size:22px;
+
+    }
+
+
+
+    .hero-title{
+
+        font-size:30px;
+
+        line-height:1.2;
+
+    }
+
+
+
+    .hero-badge{
+
+        font-size:11px;
+
+        padding:8px 14px;
+
+    }
+
+
+
+    .dashboard-card{
+
+        border-radius:20px;
+
+    }
+
+
+
+    .dashboard-body{
+
+        padding:15px;
+
+    }
+
+
+
+    .feature-card,
+    .security-card,
+    .step-card{
+
+        padding:25px 18px;
+
+    }
+
+
+
+    .footer{
+
+        text-align:center;
+
+    }
+
+
+}
+
+
+
+
+
+/* HP MINI
+   320px
+*/
+@media(max-width:350px){
+
+
+    .hero-title{
+
+        font-size:27px;
+
+    }
+
+
+    .hero-text{
+
+        font-size:14px;
+
+    }
+
+
+    .btn{
+
+        font-size:14px;
+
+    }
+
+
+}
+/* =========================================================
+   FINAL RESPONSIVE PATCH
+   ANDROID + TABLET + LAPTOP + DESKTOP
+========================================================= */
+
+
+/* =========================
+   ULTRA LARGE DESKTOP
+   1600px+
+========================= */
+
+@media(min-width:1600px){
+
+    .container{
+
+        max-width:1450px;
+
+    }
+
+
+    .hero-title{
+
+        font-size:82px;
+
+    }
+
+
+    .hero-text{
+
+        font-size:21px;
+
+    }
+
+
+    .dashboard-card{
+
+        transform:scale(1.05);
+
+    }
+
+}
+
+
+
+
+/* =========================
+   DESKTOP NORMAL
+   1200px - 1599px
+========================= */
+
+@media(max-width:1599px){
+
+    .hero-title{
+
+        font-size:70px;
+
+    }
+
+
+    .dashboard-body{
+
+        padding:25px;
+
+    }
+
+
+}
+
+
+
+
+
+/* =========================
+   LAPTOP
+   992px - 1199px
+========================= */
+
+@media(max-width:1199px){
+
+    .hero-title{
+
+        font-size:55px;
+
+    }
+
+
+    .hero-text{
+
+        font-size:17px;
+
+    }
+
+
+    .feature-card{
+
+        padding:25px;
+
+    }
+
+
+    .dashboard-item{
+
+        padding:18px;
+
+    }
+
+
+}
+
+
+
+
+
+/* =========================
+   TABLET LANDSCAPE
+   768px - 991px
+========================= */
+
+@media(max-width:991px){
+
+
+    .navbar-collapse{
+
+        background:
+
+        rgba(15,23,42,.95);
+
+
+        padding:
+
+        20px;
+
+
+        border-radius:
+
+        20px;
+
+
+        margin-top:
+
+        15px;
+
+    }
+
+
+
+    .nav-link{
+
+        padding:
+
+        12px;
+
+    }
+
+
+
+    .hero-section{
+
+        padding-top:
+
+        120px;
+
+    }
+
+
+
+    .hero-title{
+
+        font-size:
+
+        45px;
+
+    }
+
+
+
+    .dashboard-card{
+
+        margin-top:
+
+        40px;
+
+    }
+
+
+
+    .stat-card h2{
+
+        font-size:
+
+        34px;
+
+    }
+
+
+}
+
+
+
+
+
+/* =========================
+   ANDROID / MOBILE
+   576px - 767px
+========================= */
+
+@media(max-width:767px){
+
+
+    body{
+
+        font-size:
+
+        14px;
+
+    }
+
+
+
+    .container{
+
+        width:
+
+        100%;
+
+
+        padding-left:
+
+        16px;
+
+
+        padding-right:
+
+        16px;
+
+    }
+
+
+
+    .hero-section{
+
+        text-align:center;
+
+    }
+
+
+
+    .hero-title{
+
+        font-size:
+
+        34px;
+
+
+        line-height:
+
+        1.25;
+
+    }
+
+
+
+    .hero-text{
+
+        font-size:
+
+        15px;
+
+    }
+
+
+
+    .hero-badge{
+
+        margin:auto;
+
+    }
+
+
+
+    .mini-counter{
+
+        margin-bottom:
+
+        15px;
+
+    }
+
+
+
+    .dashboard-card{
+
+        border-radius:
+
+        20px;
+
+    }
+
+
+
+    .dashboard-header{
+
+        padding:
+
+        15px;
+
+    }
+
+
+
+    .dashboard-body{
+
+        padding:
+
+        15px;
+
+    }
+
+
+
+    .feature-card,
+    .stat-card,
+    .payment-card,
+    .security-card,
+    .step-card{
+
+
+        margin-bottom:
+
+        20px;
+
+
+    }
+
+
+
+    .cta-card{
+
+        padding:
+
+        35px 20px;
+
+        text-align:center;
+
+    }
+
+
+
+}
+
+
+
+
+
+/* =========================
+   SMALL ANDROID
+   320px - 480px
+========================= */
+
+@media(max-width:480px){
+
+
+    .logo{
+
+        font-size:
+
+        22px;
+
+    }
+
+
+
+    .hero-title{
+
+        font-size:
+
+        28px;
+
+    }
+
+
+
+    .hero-text{
+
+        font-size:
+
+        14px;
+
+    }
+
+
+
+    .btn{
+
+        font-size:
+
+        14px;
+
+        padding:
+
+        12px 18px;
+
+    }
+
+
+
+    .dashboard-item h3{
+
+        font-size:
+
+        18px;
+
+    }
+
+
+
+    .dashboard-item h6{
+
+        font-size:
+
+        12px;
+
+    }
+
+
+
+    .stat-card h2{
+
+        font-size:
+
+        26px;
+
+    }
+
+
+
+    .footer{
+
+        text-align:center;
+
+    }
+
+
+
+    .social-links{
+
+        justify-content:center;
+
+    }
+
+
+}
+
+
+
+
+
+/* =========================
+   VERY SMALL PHONE
+   280px - 319px
+========================= */
+
+@media(max-width:319px){
+
+
+    .hero-title{
+
+        font-size:
+
+        25px;
+
+    }
+
+
+
+    .hero-badge{
+
+        font-size:
+
+        10px;
+
+    }
+
+
+
+    .btn{
+
+        width:
+
+        100%;
+
+    }
+
+
+}
+
+
+
+
+
+/* =========================
+   TOUCH OPTIMIZATION
+   ANDROID
+========================= */
+
+@media(pointer:coarse){
+
+
+    button,
+    a,
+    .nav-link{
+
+
+        min-height:
+
+        44px;
+
+
+        display:
+
+        inline-flex;
+
+
+        align-items:
+
+        center;
+
+
+    }
+
+
+}
+
+
+
+
+
+/* =========================
+   HIGH DPI SCREEN
+   RETINA
+========================= */
+
+@media(min-resolution:2dppx){
+
+
+    .dashboard-card,
+    .glass-card{
+
+        backdrop-filter:
+
+        blur(18px);
+
+    }
+
+
+}
