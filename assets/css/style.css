@@ -2604,3 +2604,52 @@ body.loaded{
 
 
 }
+/* =========================================================
+ PERFORMANCE OPTIMIZATION
+========================================================= */
+
+
+.animated-bg,
+.dashboard-card,
+.feature-card,
+.stat-card,
+.payment-card,
+.security-card{
+
+    will-change:transform;
+
+}
+
+
+
+@media(max-width:600px){
+
+    .animated-bg::before,
+    .animated-bg::after{
+
+        filter:blur(80px);
+
+        opacity:.15;
+
+    }
+
+
+    .stars-container{
+
+        opacity:.08;
+
+    }
+
+
+}
+@keyframes ripple{
+
+    to{
+
+        transform:scale(40);
+
+        opacity:0;
+
+    }
+
+}
