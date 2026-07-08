@@ -24,6 +24,12 @@ transform:translateY(-6px);
 box-shadow:0 30px 70px rgba(37,99,235,.15);
 }
 
+#googleLogin{
+    position:relative;
+    z-index:9999;
+    pointer-events:auto;
+}
+
 .auth-logo{
 width:90px;
 height:90px;
