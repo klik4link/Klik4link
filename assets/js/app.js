@@ -444,6 +444,45 @@ revealObserver.observe(item);
 });
 
 /*=====================================
+LIVE USER ONLINE
+=====================================*/
+
+const liveUsers = document.getElementById("live-users");
+
+if (liveUsers) {
+
+    let current = 1825;
+
+    function updateLiveUsers() {
+
+        // Lebih sering naik daripada turun
+        if (Math.random() < 0.7) {
+            current += Math.floor(Math.random() * 8) + 1;
+        } else {
+            current -= Math.floor(Math.random() * 5) + 1;
+        }
+
+        // Batasi agar tetap realistis
+        if (current < 1700) {
+            current = 1700 + Math.floor(Math.random() * 30);
+        }
+
+        if (current > 1950) {
+            current = 1920 + Math.floor(Math.random() * 20);
+        }
+
+        liveUsers.textContent = current.toLocaleString("id-ID");
+
+        // Update tiap 1–3 detik
+        setTimeout(updateLiveUsers, 1000 + Math.random() * 2000);
+
+    }
+
+    updateLiveUsers();
+
+}
+
+/*=====================================
 LOADING
 =====================================*/
 
