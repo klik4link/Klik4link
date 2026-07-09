@@ -2,7 +2,7 @@
    CLICK2PAY SERVICE WORKER
 ========================================== */
 
-const CACHE_NAME = "click2pay-v3";
+const CACHE_NAME = "click2pay-v4";
 
 const FILES = [
     "/",
@@ -66,19 +66,8 @@ self.addEventListener("fetch", event => {
     if (event.request.method !== "GET") return;
 
     event.respondWith(
-
-        caches.match(event.request).then(cache => {
-
-            return cache || fetch(event.request).then(response => {
-
-                if (
-                    !response ||
-                    response.status !== 200 ||
-                    response.type !== "basic"
-                ) {
-                    return response;
-                }
-
+        fetch(event.request)
+            .then(response => {
                 const clone = response.clone();
 
                 caches.open(CACHE_NAME).then(cache => {
@@ -86,11 +75,8 @@ self.addEventListener("fetch", event => {
                 });
 
                 return response;
-
-            });
-
-        })
-
+            })
+            .catch(() => caches.match(event.request))
     );
 
 });
