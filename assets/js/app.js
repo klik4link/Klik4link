@@ -9,21 +9,31 @@
    DOM READY
 ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded",()=>{
 
     document.body.classList.add("loaded");
 
     initNavbar();
-
     initSmoothScroll();
-
-    initReveal();
-
     initCounter();
-
     initRipple();
-
     initParallax();
+    initBackToTop();
+    initLoading();
+    initScrollProgress();
+    initFloatingCards();
+    initLazyImages();
+    initOnlineUsers();
+    initButtonLoading();
+    initPerformance();
+    initSpotlight();
+    initCopyButton();
+    initActiveMenu();
+    initYear();
+    detectDevice();
+    initImageFade();
+    initDashboard();
+    initFakeProgress();
 
 });
 
@@ -141,7 +151,7 @@ function initReveal(){
 
 function initCounter(){
 
-    const counters=document.querySelectorAll("[data-count]");
+    const counters=document.querySelectorAll("[data-target]");
 
     if(!counters.length) return;
 
@@ -167,41 +177,23 @@ function initCounter(){
 
 }
 
-
-
 function animateCounter(element){
 
-    const target=parseInt(
-
-        element.dataset.count
-
-    );
+    const target=parseInt(element.dataset.target);
 
     if(isNaN(target)) return;
 
     const duration=1800;
 
-    const start=0;
-
     const startTime=performance.now();
 
     function update(now){
 
-        const progress=Math.min(
+        const progress=Math.min((now-startTime)/duration,1);
 
-            (now-startTime)/duration,
+        const value=Math.floor(progress*target);
 
-            1
-
-        );
-
-        const value=Math.floor(
-
-            progress*(target-start)+start
-
-        );
-
-        element.textContent=value.toLocaleString();
+        element.textContent=value.toLocaleString("id-ID");
 
         if(progress<1){
 
@@ -591,23 +583,23 @@ function initOnlineUsers(){
 
     if(!el) return;
 
-    let value=Number(el.dataset.online)||500;
+    let value=Number(el.dataset.online);
 
-    el.textContent=formatNumber(value);
+    el.textContent=value.toLocaleString("id-ID");
 
     setInterval(()=>{
 
-        value+=Math.floor(Math.random()*8)-3;
+        value+=Math.floor(Math.random()*21)-10;
 
-        if(value<100) value=100;
+        if(value<1500) value=1500;
 
-        el.textContent=formatNumber(value);
+        if(value>2500) value=2500;
 
-    },4000);
+        el.textContent=value.toLocaleString("id-ID");
+
+    },3000);
 
 }
-
-
 
 
 /* =========================================================
