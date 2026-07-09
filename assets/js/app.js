@@ -1,427 +1,726 @@
-/* ==========================================
-   CLICK2PAY APP
-========================================== */
+/* =========================================
+   CLICK2PAY PREMIUM APP
+   PART 1
+========================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* =========================
-       LOADING
-    ========================= */
+    /* =========================================
+       LOADING SCREEN
+    ========================================= */
 
-    window.addEventListener("load", () => {
-        const loading = document.querySelector(".loading-screen");
+    setTimeout(() => {
+        document.body.classList.add("loaded");
+    }, 600);
 
-        setTimeout(() => {
-            loading.style.opacity = "0";
-            loading.style.visibility = "hidden";
+    /* =========================================
+       SCROLL PROGRESS BAR
+    ========================================= */
 
-            setTimeout(() => {
-                loading.remove();
-            }, 600);
-
-        }, 700);
-    });
-
-
-    /* =========================
-       SCROLL PROGRESS
-    ========================= */
-
-    const progress = document.querySelector(".scroll-progress");
+    const progressBar = document.querySelector(".scroll-progress");
 
     window.addEventListener("scroll", () => {
 
-        const total =
-            document.documentElement.scrollHeight -
-            document.documentElement.clientHeight;
+        const scrollTop = window.scrollY;
+        const docHeight = document.body.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / docHeight) * 100;
 
-        const percent =
-            window.scrollY / total * 100;
-
-        progress.style.width = percent + "%";
+        if(progressBar){
+            progressBar.style.width = progress + "%";
+        }
 
     });
 
-
-    /* =========================
-       NAVBAR
-    ========================= */
+    /* =========================================
+       NAVBAR SCROLL EFFECT
+    ========================================= */
 
     const navbar = document.querySelector(".glass-navbar");
 
-    window.addEventListener("scroll", () => {
-
-        if (window.scrollY > 30) {
-
-            navbar.classList.add("navbar-scrolled");
-
-        } else {
-
-            navbar.classList.remove("navbar-scrolled");
-
+    function updateNavbar(){
+        if(window.scrollY > 50){
+            navbar.classList.add("scrolled");
+        }else{
+            navbar.classList.remove("scrolled");
         }
+    }
 
+    updateNavbar();
+    window.addEventListener("scroll", updateNavbar);
+
+    /* =========================================
+       BACK TO TOP
+    ========================================= */
+
+    const backToTop = document.querySelector(".back-to-top");
+
+    function toggleBackToTop(){
+        if(window.scrollY > 400){
+            backToTop.classList.add("show");
+        }else{
+            backToTop.classList.remove("show");
+        }
+    }
+
+    toggleBackToTop();
+    window.addEventListener("scroll", toggleBackToTop);
+
+    if(backToTop){
+        backToTop.addEventListener("click", () => {
+            window.scrollTo({
+                top:0,
+                behavior:"smooth"
+            });
+        });
+    }
+
+    /* =========================================
+       SMOOTH SCROLL NAVIGATION
+    ========================================= */
+
+    document.querySelectorAll("a[href^='#']").forEach(link => {
+
+        link.addEventListener("click", function(e){
+
+            const targetId = this.getAttribute("href");
+            const target = document.querySelector(targetId);
+
+            if(target){
+                e.preventDefault();
+
+                const offset = 80;
+                const top = target.offsetTop - offset;
+
+                window.scrollTo({
+                    top:top,
+                    behavior:"smooth"
+                });
+
+                // tutup navbar mobile
+                const navbarCollapse = document.querySelector(".navbar-collapse");
+                if(navbarCollapse.classList.contains("show")){
+                    bootstrap.Collapse.getInstance(navbarCollapse).hide();
+                }
+            }
+        });
     });
 
-
-    /* =========================
-       COUNTER
-    ========================= */
+    /* =========================================
+       COUNTER ANIMATION
+    ========================================= */
 
     const counters = document.querySelectorAll(".counter");
 
-    const observer = new IntersectionObserver((entries) => {
+    const animateCounter = (counter) => {
 
-        entries.forEach(entry => {
+        const target = +counter.getAttribute("data-target");
+        const duration = 2000;
+        const step = target / (duration / 16);
 
-            if (!entry.isIntersecting) return;
+        let current = 0;
 
-            const counter = entry.target;
+        const update = () => {
 
-            const target = +counter.dataset.target;
+            current += step;
 
-            let current = 0;
-
-            const speed = target / 100;
-
-            const update = () => {
-
-                current += speed;
-
-                if (current < target) {
-
-                    counter.innerText =
-                        Math.floor(current).toLocaleString();
-
-                    requestAnimationFrame(update);
-
-                } else {
-
-                    counter.innerText =
-                        target.toLocaleString();
-
-                }
-
-            };
-
-            update();
-
-            observer.unobserve(counter);
-
-        });
-
-    }, {
-
-        threshold: .5
-
-    });
-
-    counters.forEach(counter => observer.observe(counter));
-
-
-    /* =========================
-       SMOOTH SCROLL
-    ========================= */
-
-    document.querySelectorAll('a[href^="#"]').forEach(link => {
-
-        link.onclick = function (e) {
-
-            const target =
-                document.querySelector(this.getAttribute("href"));
-
-            if (!target) return;
-
-            e.preventDefault();
-
-            target.scrollIntoView({
-
-                behavior: "smooth"
-
-            });
-
+            if(current < target){
+                counter.textContent = Math.floor(current).toLocaleString("id-ID");
+                requestAnimationFrame(update);
+            }else{
+                counter.textContent = target.toLocaleString("id-ID");
+            }
         };
 
+        update();
+    };
+
+    const counterObserver = new IntersectionObserver((entries, observer) => {
+
+        entries.forEach(entry => {
+            if(entry.isIntersecting){
+                animateCounter(entry.target);
+                observer.unobserve(entry.target);
+            }
+        });
+
+    }, { threshold:0.4 });
+
+    counters.forEach(counter => {
+        counterObserver.observe(counter);
     });
 
+    /* =========================================
+       ACTIVE NAV LINK ON SCROLL
+    ========================================= */
 
-    /* =========================
-       ACTIVE MENU
-    ========================= */
+    const sections = document.querySelectorAll("section[id]");
+    const navLinks = document.querySelectorAll(".nav-link");
 
-    const sections = document.querySelectorAll("section");
-
-    const navLinks =
-        document.querySelectorAll(".navbar .nav-link");
-
-    window.addEventListener("scroll", () => {
+    function setActiveNav(){
 
         let current = "";
 
-        sections.forEach(sec => {
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 120;
+            const sectionHeight = section.offsetHeight;
 
-            const top =
-                sec.offsetTop - 120;
-
-            if (scrollY >= top) {
-
-                current = sec.getAttribute("id");
-
+            if(window.scrollY >= sectionTop &&
+               window.scrollY < sectionTop + sectionHeight){
+                current = section.getAttribute("id");
             }
-
         });
 
         navLinks.forEach(link => {
-
             link.classList.remove("active");
 
-            if (link.getAttribute("href") == "#" + current) {
-
+            if(link.getAttribute("href") === `#${current}`){
                 link.classList.add("active");
-
             }
-
         });
-
-    });
-
-
-    /* =========================
-       BACK TO TOP
-    ========================= */
-
-    const topBtn =
-        document.querySelector(".back-to-top");
-
-    window.addEventListener("scroll", () => {
-
-        if (window.scrollY > 500) {
-
-            topBtn.classList.add("show");
-
-        } else {
-
-            topBtn.classList.remove("show");
-
-        }
-
-    });
-
-    topBtn.onclick = () => {
-
-        window.scrollTo({
-
-            top: 0,
-
-            behavior: "smooth"
-
-        });
-
-    };
-
-
-    /* =========================
-       LIVE USER
-    ========================= */
-
-    const live =
-        document.getElementById("live-users");
-
-    if (live) {
-
-        let value = 1825;
-
-        setInterval(() => {
-
-            value += Math.floor(Math.random() * 15 - 7);
-
-            if (value < 1700)
-                value = 1700;
-
-            if (value > 2100)
-                value = 2100;
-
-            live.innerText =
-                value.toLocaleString();
-
-        }, 3000);
-
     }
 
+    setActiveNav();
+    window.addEventListener("scroll", setActiveNav);
 
-    /* =========================
-       SNOW
-    ========================= */
+});
 
-    const snow =
-        document.querySelector(".snow-container");
+/* ==========================================
+   CLICK2PAY
+   PART 2
+   SNOW + STARS + LIVE USERS
+========================================== */
 
-    if (snow) {
+document.addEventListener("DOMContentLoaded",()=>{
 
-        for (let i = 0; i < 60; i++) {
+/* =========================
+   SNOW EFFECT
+========================= */
 
-            const span =
-                document.createElement("span");
+const snowContainer=document.querySelector(".snow-container");
 
-            span.className = "snowflake";
+if(snowContainer){
 
-            span.style.left =
-                Math.random() * 100 + "%";
+for(let i=0;i<60;i++){
 
-            span.style.animationDelay =
-                Math.random() * 10 + "s";
+const snow=document.createElement("span");
 
-            span.style.animationDuration =
-                8 + Math.random() * 8 + "s";
+snow.className="snow";
 
-            span.style.opacity =
-                Math.random();
+snow.style.left=Math.random()*100+"%";
 
-            snow.appendChild(span);
+snow.style.opacity=Math.random();
 
-        }
+snow.style.width=(Math.random()*5+2)+"px";
 
-    }
+snow.style.height=snow.style.width;
 
+snow.style.animationDuration=
+(8+Math.random()*12)+"s";
 
-    /* =========================
-       STARS
-    ========================= */
+snow.style.animationDelay=
+Math.random()*10+"s";
 
-    const stars =
-        document.querySelector(".stars-container");
+snowContainer.appendChild(snow);
 
-    if (stars) {
+}
 
-        for (let i = 0; i < 120; i++) {
+}
 
-            const s =
-                document.createElement("span");
+/* =========================
+   STARS
+========================= */
 
-            s.className = "star";
+const stars=document.querySelector(".stars-container");
 
-            s.style.left =
-                Math.random() * 100 + "%";
+if(stars){
 
-            s.style.top =
-                Math.random() * 100 + "%";
+for(let i=0;i<120;i++){
 
-            s.style.animationDelay =
-                Math.random() * 5 + "s";
+const star=document.createElement("span");
 
-            stars.appendChild(s);
+star.className="star";
 
-        }
+star.style.left=Math.random()*100+"%";
 
-    }
+star.style.top=Math.random()*100+"%";
 
+star.style.opacity=Math.random();
 
-    /* =========================
-       HERO PARALLAX
-    ========================= */
+star.style.animationDelay=
+Math.random()*5+"s";
 
-    const hero =
-        document.querySelector(".hero-section");
+star.style.animationDuration=
+(2+Math.random()*4)+"s";
 
-    window.addEventListener("mousemove", e => {
+stars.appendChild(star);
 
-        if (!hero) return;
+}
 
-        const x =
-            (window.innerWidth / 2 - e.clientX) / 50;
+}
 
-        const y =
-            (window.innerHeight / 2 - e.clientY) / 50;
+/* =========================
+   LIVE USER COUNTER
+========================= */
 
-        hero.style.backgroundPosition =
-            `${x}px ${y}px`;
+const live=document.getElementById("live-users");
 
-    });
+if(live){
 
+let current=1825;
 
-    /* =========================
-       CARD HOVER
-    ========================= */
+setInterval(()=>{
 
-    document.querySelectorAll(
-        ".feature-card,.stat-card,.glass-card,.payment-card,.step-card,.security-card"
-    ).forEach(card => {
+const random=Math.floor(Math.random()*9)-4;
 
-        card.addEventListener("mousemove", e => {
+current+=random;
 
-            const rect =
-                card.getBoundingClientRect();
+if(current<1750){
 
-            const x =
-                e.clientX - rect.left;
+current=1760;
 
-            const y =
-                e.clientY - rect.top;
+}
 
-            card.style.setProperty("--x", x + "px");
+if(current>1950){
 
-            card.style.setProperty("--y", y + "px");
+current=1910;
 
-        });
+}
 
-    });
+live.textContent=current.toLocaleString("id-ID");
 
+},2500);
 
-    /* =========================
-       MOBILE NAV CLOSE
-    ========================= */
+}
 
-    const navCollapse =
-        document.querySelector(".navbar-collapse");
+/* =========================
+   FLOATING DASHBOARD
+========================= */
 
-    document.querySelectorAll(".nav-link")
-        .forEach(link => {
+const dashboard=document.querySelector(".dashboard-card");
 
-            link.onclick = () => {
+if(dashboard){
 
-                if (navCollapse.classList.contains("show")) {
+dashboard.style.animation="float 5s ease-in-out infinite";
 
-                    bootstrap.Collapse.getInstance(navCollapse).hide();
+}
 
-                }
+/* =========================
+   HERO PARALLAX
+========================= */
 
-            };
+window.addEventListener("mousemove",(e)=>{
 
-        });
+const bg=document.querySelector(".animated-bg");
 
+if(!bg)return;
 
-    /* =========================
-       BUTTON RIPPLE
-    ========================= */
+const x=(e.clientX/window.innerWidth-.5)*20;
 
-    document.querySelectorAll(".btn").forEach(btn => {
+const y=(e.clientY/window.innerHeight-.5)*20;
 
-        btn.addEventListener("click", function (e) {
+bg.style.transform=
+`translate(${x}px,${y}px)`;
 
-            const circle =
-                document.createElement("span");
+});
 
-            circle.className = "ripple";
+});
 
-            const rect =
-                this.getBoundingClientRect();
+/* ==========================================
+   CLICK2PAY
+   PART 3
+   BUTTONS • CARDS • EFFECTS
+========================================== */
 
-            circle.style.left =
-                e.clientX - rect.left + "px";
+document.addEventListener("DOMContentLoaded",()=>{
 
-            circle.style.top =
-                e.clientY - rect.top + "px";
+/* =========================
+   RIPPLE BUTTON
+========================= */
 
-            this.appendChild(circle);
+document.querySelectorAll(".btn").forEach(btn=>{
 
-            setTimeout(() => {
+btn.addEventListener("click",function(e){
 
-                circle.remove();
+const ripple=document.createElement("span");
 
-            }, 600);
+const rect=this.getBoundingClientRect();
 
-        });
+const size=Math.max(rect.width,rect.height);
 
-    });
+ripple.style.width=size+"px";
+ripple.style.height=size+"px";
+
+ripple.style.left=
+e.clientX-rect.left-size/2+"px";
+
+ripple.style.top=
+e.clientY-rect.top-size/2+"px";
+
+ripple.style.position="absolute";
+ripple.style.borderRadius="50%";
+ripple.style.background="rgba(255,255,255,.35)";
+ripple.style.transform="scale(0)";
+ripple.style.pointerEvents="none";
+ripple.style.animation="ripple .6s linear";
+
+this.style.position="relative";
+this.style.overflow="hidden";
+
+this.appendChild(ripple);
+
+setTimeout(()=>ripple.remove(),600);
+
+});
+
+});
+
+/* =========================
+   CARD HOVER TILT
+========================= */
+
+document.querySelectorAll(
+
+".feature-card,.stat-card,.step-card,.payment-card,.security-card,.glass-card"
+
+).forEach(card=>{
+
+card.addEventListener("mousemove",e=>{
+
+const rect=card.getBoundingClientRect();
+
+const x=e.clientX-rect.left;
+
+const y=e.clientY-rect.top;
+
+const rotateY=(x/rect.width-.5)*10;
+
+const rotateX=(.5-y/rect.height)*10;
+
+card.style.transform=
+
+`perspective(900px)
+rotateX(${rotateX}deg)
+rotateY(${rotateY}deg)
+translateY(-8px)`;
+
+});
+
+card.addEventListener("mouseleave",()=>{
+
+card.style.transform="";
+
+});
+
+});
+
+/* =========================
+   GLOW EFFECT
+========================= */
+
+document.querySelectorAll(
+
+".feature-card,.stat-card"
+
+).forEach(card=>{
+
+card.addEventListener("mouseenter",()=>{
+
+card.classList.add("glow");
+
+});
+
+card.addEventListener("mouseleave",()=>{
+
+card.classList.remove("glow");
+
+});
+
+});
+
+/* =========================
+   HERO BADGE PULSE
+========================= */
+
+document.querySelectorAll(".hero-badge")
+
+.forEach(el=>{
+
+el.style.animation=
+
+"pulse 2.5s infinite";
+
+});
+
+/* =========================
+   ICON ROTATE
+========================= */
+
+document.querySelectorAll(
+
+".feature-icon i"
+
+).forEach(icon=>{
+
+icon.addEventListener("mouseenter",()=>{
+
+icon.style.animation=
+
+"rotate .8s linear";
+
+});
+
+icon.addEventListener("mouseleave",()=>{
+
+icon.style.animation="";
+
+});
+
+});
+
+});
+
+/* ==========================================
+   CLICK2PAY
+   PART 4
+   FINAL
+========================================== */
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+/* =========================
+   TYPING EFFECT
+========================= */
+
+const typing=document.querySelector(".hero-title");
+
+if(typing){
+
+const text=typing.innerHTML;
+
+typing.innerHTML="";
+
+let i=0;
+
+const speed=18;
+
+(function write(){
+
+if(i<text.length){
+
+typing.innerHTML+=text.charAt(i);
+
+i++;
+
+setTimeout(write,speed);
+
+}
+
+})();
+
+}
+
+/* =========================
+   REVEAL ANIMATION
+========================= */
+
+const observer=new IntersectionObserver(entries=>{
+
+entries.forEach(entry=>{
+
+if(entry.isIntersecting){
+
+entry.target.style.opacity="1";
+
+entry.target.style.transform="translateY(0)";
+
+}
+
+});
+
+},{
+threshold:.15
+});
+
+document.querySelectorAll(
+
+".feature-card,.stat-card,.glass-card,.payment-card,.security-card,.step-card"
+
+).forEach(el=>{
+
+el.style.opacity="0";
+
+el.style.transform="translateY(40px)";
+
+el.style.transition="all .7s ease";
+
+observer.observe(el);
+
+});
+
+/* =========================
+   RANDOM DASHBOARD VALUE
+========================= */
+
+const balance=document.querySelector(".dashboard-item h3.text-primary");
+
+if(balance){
+
+let value=12580000;
+
+setInterval(()=>{
+
+value+=Math.floor(Math.random()*5000);
+
+balance.textContent=
+
+"Rp "+value.toLocaleString("id-ID");
+
+},4000);
+
+}
+
+/* =========================
+   RANDOM TODAY EARNING
+========================= */
+
+const earn=document.querySelector(".dashboard-item h3.text-success");
+
+if(earn){
+
+let income=785000;
+
+setInterval(()=>{
+
+income+=Math.floor(Math.random()*1200);
+
+earn.textContent=
+
+"+ Rp "+income.toLocaleString("id-ID");
+
+},2500);
+
+}
+
+/* =========================
+   SCROLL ACTIVE NAV
+========================= */
+
+const sections=document.querySelectorAll("section");
+
+const navLinks=document.querySelectorAll(".nav-link");
+
+window.addEventListener("scroll",()=>{
+
+let current="";
+
+sections.forEach(sec=>{
+
+const top=window.scrollY;
+
+const offset=sec.offsetTop-180;
+
+const height=sec.offsetHeight;
+
+if(top>=offset && top<offset+height){
+
+current=sec.id;
+
+}
+
+});
+
+navLinks.forEach(link=>{
+
+link.classList.remove("active");
+
+if(link.getAttribute("href")==="#"+current){
+
+link.classList.add("active");
+
+}
+
+});
+
+});
+
+/* =========================
+   BACK TO TOP
+========================= */
+
+const topBtn=document.querySelector(".back-to-top");
+
+if(topBtn){
+
+topBtn.onclick=()=>{
+
+window.scrollTo({
+
+top:0,
+
+behavior:"smooth"
+
+});
+
+};
+
+}
+
+/* =========================
+   SCROLL PROGRESS
+========================= */
+
+const progress=document.querySelector(".scroll-progress");
+
+window.addEventListener("scroll",()=>{
+
+const total=
+
+document.documentElement.scrollHeight-
+
+window.innerHeight;
+
+const percent=
+
+(window.scrollY/total)*100;
+
+if(progress){
+
+progress.style.width=percent+"%";
+
+}
+
+});
+
+/* =========================
+   LOADING SCREEN
+========================= */
+
+window.addEventListener("load",()=>{
+
+setTimeout(()=>{
+
+document.body.classList.add("loaded");
+
+},500);
+
+});
+
+/* =========================
+   PERFORMANCE
+========================= */
+
+window.addEventListener("pageshow",()=>{
+
+document.body.classList.add("loaded");
+
+});
+
+console.log(
+
+"%cClick2Pay Loaded",
+
+"color:#1e88ff;font-size:18px;font-weight:bold;"
+
+);
 
 });
