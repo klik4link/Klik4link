@@ -9,100 +9,111 @@ document.addEventListener("DOMContentLoaded", () => {
        LOADING SCREEN
     ========================================= */
 
-    setTimeout(() => {
-        document.body.classList.add("loaded");
-    }, 600);
-
-    /* =========================================
-       SCROLL PROGRESS BAR
-    ========================================= */
-
-    const progressBar = document.querySelector(".scroll-progress");
-
-    window.addEventListener("scroll", () => {
-
-        const scrollTop = window.scrollY;
-        const docHeight = document.body.scrollHeight - window.innerHeight;
-        const progress = (scrollTop / docHeight) * 100;
-
-        if(progressBar){
-            progressBar.style.width = progress + "%";
-        }
-
+    window.addEventListener("load", () => {
+        setTimeout(() => {
+            document.body.classList.add("loaded");
+        }, 500);
     });
 
     /* =========================================
-       NAVBAR SCROLL EFFECT
+       ELEMENTS
     ========================================= */
 
+    const progressBar = document.querySelector(".scroll-progress");
     const navbar = document.querySelector(".glass-navbar");
-
-    function updateNavbar(){
-        if(window.scrollY > 50){
-            navbar.classList.add("scrolled");
-        }else{
-            navbar.classList.remove("scrolled");
-        }
-    }
-
-    updateNavbar();
-    window.addEventListener("scroll", updateNavbar);
-
-    /* =========================================
-       BACK TO TOP
-    ========================================= */
-
     const backToTop = document.querySelector(".back-to-top");
 
-    function toggleBackToTop(){
-        if(window.scrollY > 400){
-            backToTop.classList.add("show");
-        }else{
-            backToTop.classList.remove("show");
+    /* =========================================
+       UPDATE UI ON SCROLL
+    ========================================= */
+
+    function updateScrollUI() {
+
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+
+        /* Progress Bar */
+
+        if (progressBar && docHeight > 0) {
+            progressBar.style.width = `${(scrollTop / docHeight) * 100}%`;
         }
+
+        /* Navbar */
+
+        if (navbar) {
+            navbar.classList.toggle("scrolled", scrollTop > 50);
+        }
+
+        /* Back To Top */
+
+        if (backToTop) {
+            backToTop.classList.toggle("show", scrollTop > 400);
+        }
+
     }
 
-    toggleBackToTop();
-    window.addEventListener("scroll", toggleBackToTop);
+    updateScrollUI();
+    window.addEventListener("scroll", updateScrollUI, {
+        passive: true
+    });
 
-    if(backToTop){
+    /* =========================================
+       BACK TO TOP BUTTON
+    ========================================= */
+
+    if (backToTop) {
+
         backToTop.addEventListener("click", () => {
+
             window.scrollTo({
-                top:0,
-                behavior:"smooth"
+                top: 0,
+                behavior: "smooth"
             });
+
         });
+
     }
 
     /* =========================================
        SMOOTH SCROLL NAVIGATION
     ========================================= */
 
-    document.querySelectorAll("a[href^='#']").forEach(link => {
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
 
-        link.addEventListener("click", function(e){
+        link.addEventListener("click", function (e) {
 
             const targetId = this.getAttribute("href");
+
+            if (targetId === "#") return;
+
             const target = document.querySelector(targetId);
 
-            if(target){
-                e.preventDefault();
+            if (!target) return;
 
-                const offset = 80;
-                const top = target.offsetTop - offset;
+            e.preventDefault();
 
-                window.scrollTo({
-                    top:top,
-                    behavior:"smooth"
-                });
+            const offset = 80;
 
-                // tutup navbar mobile
-                const navbarCollapse = document.querySelector(".navbar-collapse");
-                if(navbarCollapse.classList.contains("show")){
-                    bootstrap.Collapse.getInstance(navbarCollapse).hide();
-                }
+            window.scrollTo({
+                top: target.offsetTop - offset,
+                behavior: "smooth"
+            });
+
+            /* Tutup Navbar Mobile */
+
+            const navbarCollapse = document.querySelector(".navbar-collapse");
+
+            if (navbarCollapse && navbarCollapse.classList.contains("show")) {
+
+                const bsCollapse =
+                    bootstrap.Collapse.getOrCreateInstance(navbarCollapse);
+
+                bsCollapse.hide();
+
             }
+
         });
+
     });
 
     /* =========================================
@@ -113,301 +124,337 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const animateCounter = (counter) => {
 
-        const target = +counter.getAttribute("data-target");
-        const duration = 2000;
-        const step = target / (duration / 16);
+        const target = Number(counter.dataset.target);
 
         let current = 0;
 
+        const duration = 2000;
+
+        const increment = target / (duration / 16);
+
         const update = () => {
 
-            current += step;
+            current += increment;
 
-            if(current < target){
-                counter.textContent = Math.floor(current).toLocaleString("id-ID");
+            if (current < target) {
+
+                counter.textContent =
+                    Math.floor(current).toLocaleString("id-ID");
+
                 requestAnimationFrame(update);
-            }else{
-                counter.textContent = target.toLocaleString("id-ID");
+
+            } else {
+
+                counter.textContent =
+                    target.toLocaleString("id-ID");
+
             }
+
         };
 
         update();
+
     };
 
-    const counterObserver = new IntersectionObserver((entries, observer) => {
+    if (counters.length) {
 
-        entries.forEach(entry => {
-            if(entry.isIntersecting){
+        const counterObserver = new IntersectionObserver((entries, observer) => {
+
+            entries.forEach(entry => {
+
+                if (!entry.isIntersecting) return;
+
                 animateCounter(entry.target);
+
                 observer.unobserve(entry.target);
-            }
+
+            });
+
+        }, {
+            threshold: 0.4
         });
 
-    }, { threshold:0.4 });
+        counters.forEach(counter => {
 
-    counters.forEach(counter => {
-        counterObserver.observe(counter);
-    });
+            counterObserver.observe(counter);
+
+        });
+
+    }
 
     /* =========================================
-       ACTIVE NAV LINK ON SCROLL
+       ACTIVE NAVIGATION
     ========================================= */
 
     const sections = document.querySelectorAll("section[id]");
     const navLinks = document.querySelectorAll(".nav-link");
 
-    function setActiveNav(){
+    function setActiveNav() {
 
         let current = "";
 
         sections.forEach(section => {
-            const sectionTop = section.offsetTop - 120;
-            const sectionHeight = section.offsetHeight;
 
-            if(window.scrollY >= sectionTop &&
-               window.scrollY < sectionTop + sectionHeight){
-                current = section.getAttribute("id");
+            const top = section.offsetTop - 120;
+            const bottom = top + section.offsetHeight;
+
+            if (window.scrollY >= top &&
+                window.scrollY < bottom) {
+
+                current = section.id;
+
             }
+
         });
 
         navLinks.forEach(link => {
-            link.classList.remove("active");
 
-            if(link.getAttribute("href") === `#${current}`){
-                link.classList.add("active");
-            }
+            link.classList.toggle(
+                "active",
+                link.getAttribute("href") === `#${current}`
+            );
+
         });
+
     }
 
     setActiveNav();
-    window.addEventListener("scroll", setActiveNav);
+
+    window.addEventListener("scroll", setActiveNav, {
+        passive: true
+    });
 
 });
 
 /* ==========================================
    CLICK2PAY
    PART 2
-   SNOW + STARS + LIVE USERS
+   SNOW • STARS • LIVE USERS
 ========================================== */
 
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener("DOMContentLoaded", () => {
 
-/* =========================
-   SNOW EFFECT
-========================= */
+    /* =========================
+       ELEMENTS
+    ========================= */
 
-const snowContainer=document.querySelector(".snow-container");
+    const snowContainer = document.querySelector(".snow-container");
+    const starsContainer = document.querySelector(".stars-container");
+    const liveUsers = document.getElementById("live-users");
+    const dashboard = document.querySelector(".dashboard-card");
+    const animatedBg = document.querySelector(".animated-bg");
 
-if(snowContainer){
+    /* =========================
+       SNOW EFFECT
+    ========================= */
 
-for(let i=0;i<60;i++){
+    if (snowContainer) {
 
-const snow=document.createElement("span");
+        const fragment = document.createDocumentFragment();
 
-snow.className="snow";
+        for (let i = 0; i < 60; i++) {
 
-snow.style.left=Math.random()*100+"%";
+            const snow = document.createElement("span");
 
-snow.style.opacity=Math.random();
+            snow.className = "snow";
+            snow.style.left = `${Math.random() * 100}%`;
+            snow.style.opacity = Math.random();
+            snow.style.width = `${Math.random() * 5 + 2}px`;
+            snow.style.height = snow.style.width;
+            snow.style.animationDuration = `${8 + Math.random() * 12}s`;
+            snow.style.animationDelay = `${Math.random() * 10}s`;
 
-snow.style.width=(Math.random()*5+2)+"px";
+            fragment.appendChild(snow);
 
-snow.style.height=snow.style.width;
+        }
 
-snow.style.animationDuration=
-(8+Math.random()*12)+"s";
+        snowContainer.appendChild(fragment);
 
-snow.style.animationDelay=
-Math.random()*10+"s";
+    }
 
-snowContainer.appendChild(snow);
+    /* =========================
+       STARS
+    ========================= */
 
-}
+    if (starsContainer) {
 
-}
+        const fragment = document.createDocumentFragment();
 
-/* =========================
-   STARS
-========================= */
+        for (let i = 0; i < 120; i++) {
 
-const stars=document.querySelector(".stars-container");
+            const star = document.createElement("span");
 
-if(stars){
+            star.className = "star";
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.opacity = Math.random();
+            star.style.animationDelay = `${Math.random() * 5}s`;
+            star.style.animationDuration = `${2 + Math.random() * 4}s`;
 
-for(let i=0;i<120;i++){
+            fragment.appendChild(star);
 
-const star=document.createElement("span");
+        }
 
-star.className="star";
+        starsContainer.appendChild(fragment);
 
-star.style.left=Math.random()*100+"%";
+    }
 
-star.style.top=Math.random()*100+"%";
+    /* =========================
+       LIVE USER COUNTER
+    ========================= */
 
-star.style.opacity=Math.random();
+    if (liveUsers) {
 
-star.style.animationDelay=
-Math.random()*5+"s";
+        let current = 1825;
 
-star.style.animationDuration=
-(2+Math.random()*4)+"s";
+        setInterval(() => {
 
-stars.appendChild(star);
+            current += Math.floor(Math.random() * 9) - 4;
 
-}
+            if (current < 1750) current = 1760;
+            if (current > 1950) current = 1910;
 
-}
+            liveUsers.textContent = current.toLocaleString("id-ID");
 
-/* =========================
-   LIVE USER COUNTER
-========================= */
+        }, 2500);
 
-const live=document.getElementById("live-users");
+    }
 
-if(live){
+    /* =========================
+       FLOATING DASHBOARD
+    ========================= */
 
-let current=1825;
+    if (dashboard) {
 
-setInterval(()=>{
+        dashboard.style.animation = "float 5s ease-in-out infinite";
 
-const random=Math.floor(Math.random()*9)-4;
+    }
 
-current+=random;
+    /* =========================
+       HERO PARALLAX
+    ========================= */
 
-if(current<1750){
+    if (animatedBg) {
 
-current=1760;
+        let mouseX = 0;
+        let mouseY = 0;
+        let ticking = false;
 
-}
+        window.addEventListener("mousemove", (e) => {
 
-if(current>1950){
+            mouseX = (e.clientX / window.innerWidth - 0.5) * 20;
+            mouseY = (e.clientY / window.innerHeight - 0.5) * 20;
 
-current=1910;
+            if (!ticking) {
 
-}
+                requestAnimationFrame(() => {
 
-live.textContent=current.toLocaleString("id-ID");
+                    animatedBg.style.transform =
+                        `translate(${mouseX}px, ${mouseY}px)`;
 
-},2500);
+                    ticking = false;
 
-}
+                });
 
-/* =========================
-   FLOATING DASHBOARD
-========================= */
+                ticking = true;
 
-const dashboard=document.querySelector(".dashboard-card");
+            }
 
-if(dashboard){
+        });
 
-dashboard.style.animation="float 5s ease-in-out infinite";
-
-}
-
-/* =========================
-   HERO PARALLAX
-========================= */
-
-window.addEventListener("mousemove",(e)=>{
-
-const bg=document.querySelector(".animated-bg");
-
-if(!bg)return;
-
-const x=(e.clientX/window.innerWidth-.5)*20;
-
-const y=(e.clientY/window.innerHeight-.5)*20;
-
-bg.style.transform=
-`translate(${x}px,${y}px)`;
-
-});
-
-});
-
-/* ==========================================
-   CLICK2PAY
-   PART 3
-   BUTTONS • CARDS • EFFECTS
-========================================== */
-
-document.addEventListener("DOMContentLoaded",()=>{
-
-/* =========================
-   RIPPLE BUTTON
-========================= */
-
-document.querySelectorAll(".btn").forEach(btn=>{
-
-btn.addEventListener("click",function(e){
-
-const ripple=document.createElement("span");
-
-const rect=this.getBoundingClientRect();
-
-const size=Math.max(rect.width,rect.height);
-
-ripple.style.width=size+"px";
-ripple.style.height=size+"px";
-
-ripple.style.left=
-e.clientX-rect.left-size/2+"px";
-
-ripple.style.top=
-e.clientY-rect.top-size/2+"px";
-
-ripple.style.position="absolute";
-ripple.style.borderRadius="50%";
-ripple.style.background="rgba(255,255,255,.35)";
-ripple.style.transform="scale(0)";
-ripple.style.pointerEvents="none";
-ripple.style.animation="ripple .6s linear";
-
-this.style.position="relative";
-this.style.overflow="hidden";
-
-this.appendChild(ripple);
-
-setTimeout(()=>ripple.remove(),600);
-
-});
+    }
 
 });
 
 /* =========================
-   CARD HOVER TILT
+   GLOW EFFECT
 ========================= */
 
 document.querySelectorAll(
+    ".feature-card,.stat-card,.security-card,.payment-card"
+).forEach(card => {
 
-".feature-card,.stat-card,.step-card,.payment-card,.security-card,.glass-card"
+    card.addEventListener("mouseenter", () => {
+        card.classList.add("glow");
+    });
 
-).forEach(card=>{
-
-card.addEventListener("mousemove",e=>{
-
-const rect=card.getBoundingClientRect();
-
-const x=e.clientX-rect.left;
-
-const y=e.clientY-rect.top;
-
-const rotateY=(x/rect.width-.5)*10;
-
-const rotateX=(.5-y/rect.height)*10;
-
-card.style.transform=
-
-`perspective(900px)
-rotateX(${rotateX}deg)
-rotateY(${rotateY}deg)
-translateY(-8px)`;
+    card.addEventListener("mouseleave", () => {
+        card.classList.remove("glow");
+    });
 
 });
 
-card.addEventListener("mouseleave",()=>{
+/* =========================
+   HERO BADGE PULSE
+========================= */
 
-card.style.transform="";
+document.querySelectorAll(".hero-badge").forEach(badge => {
+    badge.style.animation = "pulse 2.5s infinite";
+});
+
+/* =========================
+   ICON ROTATE
+========================= */
+
+document.querySelectorAll(
+    ".feature-icon i,.step-icon i,.stat-icon i"
+).forEach(icon => {
+
+    icon.addEventListener("mouseenter", () => {
+        icon.style.animation = "rotate .8s linear";
+    });
+
+    icon.addEventListener("animationend", () => {
+        icon.style.animation = "";
+    });
+
+});
+
+/* =========================
+   DASHBOARD ITEM HOVER
+========================= */
+
+document.querySelectorAll(".dashboard-item").forEach(item => {
+
+    item.addEventListener("mouseenter", () => {
+        item.style.transform = "translateY(-5px)";
+    });
+
+    item.addEventListener("mouseleave", () => {
+        item.style.transform = "";
+    });
+
+});
+
+/* =========================
+   PAYMENT CARD EFFECT
+========================= */
+
+document.querySelectorAll(".payment-card").forEach(card => {
+
+    card.addEventListener("mouseenter", () => {
+        card.style.transform = "translateY(-8px) scale(1.03)";
+    });
+
+    card.addEventListener("mouseleave", () => {
+        card.style.transform = "";
+    });
+
+});
+
+/* =========================
+   CTA BUTTON SHADOW
+========================= */
+
+document.querySelectorAll("#cta .btn").forEach(btn => {
+
+    btn.addEventListener("mouseenter", () => {
+        btn.style.boxShadow = "0 12px 30px rgba(30,136,255,.35)";
+    });
+
+    btn.addEventListener("mouseleave", () => {
+        btn.style.boxShadow = "";
+    });
 
 });
 
@@ -418,22 +465,16 @@ card.style.transform="";
 ========================= */
 
 document.querySelectorAll(
+    ".feature-card,.stat-card,.payment-card,.security-card,.glass-card,.step-card"
+).forEach(card => {
 
-".feature-card,.stat-card"
+    card.addEventListener("mouseenter", () => {
+        card.classList.add("glow");
+    });
 
-).forEach(card=>{
-
-card.addEventListener("mouseenter",()=>{
-
-card.classList.add("glow");
-
-});
-
-card.addEventListener("mouseleave",()=>{
-
-card.classList.remove("glow");
-
-});
+    card.addEventListener("mouseleave", () => {
+        card.classList.remove("glow");
+    });
 
 });
 
@@ -441,14 +482,8 @@ card.classList.remove("glow");
    HERO BADGE PULSE
 ========================= */
 
-document.querySelectorAll(".hero-badge")
-
-.forEach(el=>{
-
-el.style.animation=
-
-"pulse 2.5s infinite";
-
+document.querySelectorAll(".hero-badge").forEach(badge => {
+    badge.style.animation = "pulse 2.5s infinite";
 });
 
 /* =========================
@@ -456,24 +491,16 @@ el.style.animation=
 ========================= */
 
 document.querySelectorAll(
+    ".feature-icon i,.step-icon i,.stat-icon i"
+).forEach(icon => {
 
-".feature-icon i"
+    icon.addEventListener("mouseenter", () => {
+        icon.style.animation = "rotate .8s linear";
+    });
 
-).forEach(icon=>{
-
-icon.addEventListener("mouseenter",()=>{
-
-icon.style.animation=
-
-"rotate .8s linear";
-
-});
-
-icon.addEventListener("mouseleave",()=>{
-
-icon.style.animation="";
-
-});
+    icon.addEventListener("animationend", () => {
+        icon.style.animation = "";
+    });
 
 });
 
@@ -485,242 +512,103 @@ icon.style.animation="";
    FINAL
 ========================================== */
 
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener("DOMContentLoaded", () => {
 
-/* =========================
-   TYPING EFFECT
-========================= */
+    /* =========================
+       HERO TITLE ANIMATION
+    ========================= */
 
-const typing=document.querySelector(".hero-title");
+    const heroTitle = document.querySelector(".hero-title");
 
-if(typing){
+    if (heroTitle) {
+        heroTitle.classList.add("hero-show");
+    }
 
-const text=typing.innerHTML;
+    /* =========================
+       REVEAL ANIMATION
+    ========================= */
 
-typing.innerHTML="";
+    const observer = new IntersectionObserver((entries) => {
 
-let i=0;
+        entries.forEach(entry => {
 
-const speed=18;
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = "1";
+                entry.target.style.transform = "translateY(0)";
+                observer.unobserve(entry.target);
+            }
 
-(function write(){
+        });
 
-if(i<text.length){
+    }, {
+        threshold: 0.15
+    });
 
-typing.innerHTML+=text.charAt(i);
+    document.querySelectorAll(
+        ".feature-card,.stat-card,.glass-card,.payment-card,.security-card,.step-card,.dashboard-card"
+    ).forEach(el => {
 
-i++;
+        el.style.opacity = "0";
+        el.style.transform = "translateY(40px)";
+        el.style.transition = "all .7s ease";
 
-setTimeout(write,speed);
+        observer.observe(el);
 
-}
+    });
 
-})();
+    /* =========================
+       RANDOM BALANCE
+    ========================= */
 
-}
+    const balance = document.querySelector(".dashboard-item h3.text-primary");
 
-/* =========================
-   REVEAL ANIMATION
-========================= */
+    if (balance) {
 
-const observer=new IntersectionObserver(entries=>{
+        let value = 12580000;
 
-entries.forEach(entry=>{
+        setInterval(() => {
 
-if(entry.isIntersecting){
+            value += Math.floor(Math.random() * 5000);
 
-entry.target.style.opacity="1";
+            balance.textContent =
+                "Rp " + value.toLocaleString("id-ID");
 
-entry.target.style.transform="translateY(0)";
+        }, 4000);
 
-}
+    }
 
-});
+    /* =========================
+       RANDOM TODAY EARNING
+    ========================= */
 
-},{
-threshold:.15
-});
+    const earning = document.querySelector(".dashboard-item h3.text-success");
 
-document.querySelectorAll(
+    if (earning) {
 
-".feature-card,.stat-card,.glass-card,.payment-card,.security-card,.step-card"
+        let income = 785000;
 
-).forEach(el=>{
+        setInterval(() => {
 
-el.style.opacity="0";
+            income += Math.floor(Math.random() * 1200);
 
-el.style.transform="translateY(40px)";
+            earning.textContent =
+                "+ Rp " + income.toLocaleString("id-ID");
 
-el.style.transition="all .7s ease";
+        }, 2500);
 
-observer.observe(el);
+    }
 
-});
+    /* =========================
+       PAGE SHOW
+    ========================= */
 
-/* =========================
-   RANDOM DASHBOARD VALUE
-========================= */
+    window.addEventListener("pageshow", () => {
+        document.body.classList.add("loaded");
+    });
 
-const balance=document.querySelector(".dashboard-item h3.text-primary");
-
-if(balance){
-
-let value=12580000;
-
-setInterval(()=>{
-
-value+=Math.floor(Math.random()*5000);
-
-balance.textContent=
-
-"Rp "+value.toLocaleString("id-ID");
-
-},4000);
-
-}
-
-/* =========================
-   RANDOM TODAY EARNING
-========================= */
-
-const earn=document.querySelector(".dashboard-item h3.text-success");
-
-if(earn){
-
-let income=785000;
-
-setInterval(()=>{
-
-income+=Math.floor(Math.random()*1200);
-
-earn.textContent=
-
-"+ Rp "+income.toLocaleString("id-ID");
-
-},2500);
-
-}
-
-/* =========================
-   SCROLL ACTIVE NAV
-========================= */
-
-const sections=document.querySelectorAll("section");
-
-const navLinks=document.querySelectorAll(".nav-link");
-
-window.addEventListener("scroll",()=>{
-
-let current="";
-
-sections.forEach(sec=>{
-
-const top=window.scrollY;
-
-const offset=sec.offsetTop-180;
-
-const height=sec.offsetHeight;
-
-if(top>=offset && top<offset+height){
-
-current=sec.id;
-
-}
-
-});
-
-navLinks.forEach(link=>{
-
-link.classList.remove("active");
-
-if(link.getAttribute("href")==="#"+current){
-
-link.classList.add("active");
-
-}
-
-});
-
-});
-
-/* =========================
-   BACK TO TOP
-========================= */
-
-const topBtn=document.querySelector(".back-to-top");
-
-if(topBtn){
-
-topBtn.onclick=()=>{
-
-window.scrollTo({
-
-top:0,
-
-behavior:"smooth"
-
-});
-
-};
-
-}
-
-/* =========================
-   SCROLL PROGRESS
-========================= */
-
-const progress=document.querySelector(".scroll-progress");
-
-window.addEventListener("scroll",()=>{
-
-const total=
-
-document.documentElement.scrollHeight-
-
-window.innerHeight;
-
-const percent=
-
-(window.scrollY/total)*100;
-
-if(progress){
-
-progress.style.width=percent+"%";
-
-}
-
-});
-
-/* =========================
-   LOADING SCREEN
-========================= */
-
-window.addEventListener("load",()=>{
-
-setTimeout(()=>{
-
-document.body.classList.add("loaded");
-
-},500);
-
-});
-
-/* =========================
-   PERFORMANCE
-========================= */
-
-window.addEventListener("pageshow",()=>{
-
-document.body.classList.add("loaded");
-
-});
-
-console.log(
-
-"%cClick2Pay Loaded",
-
-"color:#1e88ff;font-size:18px;font-weight:bold;"
-
-);
+    console.log(
+        "%cClick2Pay Loaded Successfully",
+        "color:#1e88ff;font-size:16px;font-weight:bold;"
+    );
 
 });
