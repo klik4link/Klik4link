@@ -1,64 +1,92 @@
-const CACHE_NAME =
-"click2pay-v1";
+/* ==========================================
+   CLICK2PAY SERVICE WORKER
+========================================== */
 
+const CACHE_NAME = "click2pay-v2";
 
 const FILES = [
-
-"/",
-
-"/assets/css/style.css",
-
-"/assets/js/app.js",
-
-"/manifest.json"
-
+    "/",
+    "/index.html",
+    "/assets/css/style.css",
+    "/assets/js/app.js",
+    "/manifest.json"
 ];
 
+/* =========================
+   INSTALL
+========================= */
 
+self.addEventListener("install", event => {
 
-self.addEventListener(
-"install",
-event=>{
+    self.skipWaiting();
 
+    event.waitUntil(
 
-event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => cache.addAll(FILES))
 
-caches.open(CACHE_NAME)
-.then(cache=>{
-
-return cache.addAll(FILES);
-
-})
-
-);
-
+    );
 
 });
 
+/* =========================
+   ACTIVATE
+========================= */
 
+self.addEventListener("activate", event => {
 
+    event.waitUntil(
 
+        caches.keys().then(keys => {
 
-self.addEventListener(
-"fetch",
-event=>{
+            return Promise.all(
 
+                keys.map(key => {
 
-event.respondWith(
+                    if (key !== CACHE_NAME) {
+                        return caches.delete(key);
+                    }
 
+                })
 
-caches.match(event.request)
-.then(response=>{
+            );
 
+        }).then(() => self.clients.claim())
 
-return response ||
-fetch(event.request);
+    );
 
+});
 
-})
+/* =========================
+   FETCH
+========================= */
 
+self.addEventListener("fetch", event => {
 
-);
+    if (event.request.method !== "GET") return;
 
+    event.respondWith(
+
+        fetch(event.request)
+
+            .then(response => {
+
+                const clone = response.clone();
+
+                caches.open(CACHE_NAME).then(cache => {
+                    cache.put(event.request, clone);
+                });
+
+                return response;
+
+            })
+
+            .catch(() => {
+
+                return caches.match(event.request);
+
+            })
+
+    );
 
 });
