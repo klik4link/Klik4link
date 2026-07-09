@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
        COUNTER ANIMATION
     ========================================= */
 
-    const counters = document.querySelectorAll(".counter");
+    const counters = document.querySelectorAll("[data-target]");
 
     const animateCounter = (counter) => {
 
