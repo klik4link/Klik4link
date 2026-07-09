@@ -1,6 +1,4 @@
 User-agent: *
-
 Allow: /
 
-Sitemap:
-https://click2pay.com/sitemap.xml
+Sitemap: https://click2pay.my.id/sitemap.xml
