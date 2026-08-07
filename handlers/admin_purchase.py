@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 # =====================================
-# KIRIM NOTIF PEMBELIAN KE ADMIN
+# NOTIF ADMIN PEMBELIAN
 # =====================================
 
 async def notify_admin_purchase(
@@ -57,9 +57,7 @@ async def notify_admin_purchase(
 
 
     for admin_id in ADMIN_IDS:
-
         try:
-
             await bot.send_message(
                 admin_id,
                 text,
@@ -68,16 +66,13 @@ async def notify_admin_purchase(
             )
 
         except Exception:
-
             logger.exception(
-                "Gagal kirim notif admin %s",
-                admin_id
+                "Gagal kirim notif admin"
             )
 
 
-
 # =====================================
-# ADMIN APPROVE
+# APPROVE PURCHASE
 # =====================================
 
 @router.callback_query(
@@ -88,7 +83,6 @@ async def approve_purchase(
 ):
 
     if callback.from_user.id not in ADMIN_IDS:
-
         await callback.answer(
             "Tidak memiliki akses",
             show_alert=True
@@ -96,11 +90,9 @@ async def approve_purchase(
         return
 
 
-
     _, user_id, code = callback.data.split(":")
 
     user_id = int(user_id)
-
 
     pool = await get_pool()
 
@@ -120,17 +112,16 @@ async def approve_purchase(
     if not purchase:
 
         await callback.answer(
-            "Data pembelian tidak ditemukan",
+            "Pembelian tidak ditemukan",
             show_alert=True
         )
         return
 
 
-
     if purchase["status"] == "paid":
 
         await callback.answer(
-            "Sudah dikonfirmasi",
+            "Sudah dibayar",
             show_alert=True
         )
         return
@@ -151,6 +142,18 @@ async def approve_purchase(
     )
 
 
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="📂 BUKA FILE",
+                    callback_data=f"open_file:{code}"
+                )
+            ]
+        ]
+    )
+
+
     await callback.message.edit_text(
         (
             "✅ <b>PEMBELIAN DITERIMA</b>\n\n"
@@ -166,9 +169,10 @@ async def approve_purchase(
         (
             "🎉 <b>Pembayaran Dikonfirmasi</b>\n\n"
             f"📂 Code : <code>{code}</code>\n\n"
-            "File sudah bisa kamu buka."
+            "File sudah aktif."
         ),
-        parse_mode="HTML"
+        parse_mode="HTML",
+        reply_markup=keyboard
     )
 
 
@@ -177,9 +181,8 @@ async def approve_purchase(
     )
 
 
-
 # =====================================
-# ADMIN REJECT
+# REJECT PURCHASE
 # =====================================
 
 @router.callback_query(
@@ -198,11 +201,9 @@ async def reject_purchase(
         return
 
 
-
     _, user_id, code = callback.data.split(":")
 
     user_id = int(user_id)
-
 
     pool = await get_pool()
 
