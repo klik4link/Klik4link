@@ -6,8 +6,8 @@ logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Request
 
-from config_vip import VIP_PACKAGES
 from bot import bot
+from config import SALES_CHANNEL_ID
 from database import fetchrow, execute
 from utils.redis_client import redis_client
 from handlers.page import send_page
@@ -16,7 +16,7 @@ from config import BAYARGG_SECRET
 router = APIRouter(prefix="/bayargg", tags=["BayarGG"])
 
 SECRET_KEY = BAYARGG_SECRET.encode()
-ADMIN_CHAT_ID = -1004437365690
+ADMIN_CHAT_ID = -1003894841696
 
 
 def secure_compare(a: str, b: str) -> bool:
@@ -103,7 +103,8 @@ async def webhook(request: Request):
             """
             UPDATE payments
             SET
-                status='paid'
+                status='paid',
+                updated_at=NOW()
             WHERE invoice_id=$1
               AND type='vip'
               AND status!='paid'
@@ -119,12 +120,17 @@ async def webhook(request: Request):
 
         paket = vip_tx["code"]
 
-        paket_data = VIP_PACKAGES.get(paket)
+        vip_days = {
+            "vip1": 1,
+            "vip3": 3,
+            "vip5": 5,
+            "vip7": 7,
+            "vip10": 10,
+            "vip20": 20,
+            "vip30": 30
+        }
 
-        if not paket_data:
-            days = 1
-        else:
-            days = paket_data["days"]
+        days = vip_days.get(paket, 30)
 
         await execute(
             """
@@ -138,7 +144,7 @@ async def webhook(request: Request):
                     THEN NOW() + ($2 || ' days')::interval
                     ELSE vip_until + ($2 || ' days')::interval
                 END
-            WHERE user_id = $1
+            WHERE telegram_id = $1
             """,
             vip_tx["user_id"],
             days
@@ -198,7 +204,7 @@ async def webhook(request: Request):
             qr_message_id,
             qr_chat_id
         FROM file_purchases
-        WHERE payment_id=$1
+        WHERE invoice_id=$1
         """,
         invoice_id
     )
@@ -226,7 +232,7 @@ async def webhook(request: Request):
         SET
             status='paid',
             paid_at=NOW()
-        WHERE payment_id=$1
+        WHERE invoice_id=$1
           AND status='pending'
         """,
         invoice_id
@@ -252,7 +258,7 @@ async def webhook(request: Request):
             """
             UPDATE users
             SET balance = balance + $1
-            WHERE user_id = $2
+            WHERE telegram_id = $2
             """,
             file_tx["paid_price"],
             file_tx["owner_id"]
@@ -288,6 +294,7 @@ async def webhook(request: Request):
             code=file_tx["file_code"],
             page=1
         )
+
         if not sent:
             raise Exception("send_page returned False")
 
@@ -308,6 +315,25 @@ async def webhook(request: Request):
             file_tx["user_id"],
             "⚠️ Pembayaran berhasil, tetapi file gagal dikirim otomatis.\nSilakan hubungi admin."
         )
+
+
+    # =========================
+    # POST KE CHANNEL
+    # =========================
+    try:
+        await bot.send_message(
+            SALES_CHANNEL_ID,
+            (
+                "💰 <b>FILE BERHASIL TERJUAL</b>\n\n"
+                f"📂 Code : <code>{file_tx['file_code']}</code>\n"
+                f"👤 Buyer : <code>{file_tx['user_id']}</code>\n"
+                f"💵 Harga : Rp {file_tx['paid_price']:,}"
+            ).replace(",", "."),
+            parse_mode="HTML"
+        )
+
+    except Exception:
+        logger.exception("channel notify failed")
 
 
     # =========================
