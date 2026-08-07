@@ -8,9 +8,9 @@ from aiogram.types import (
 from config import ADMIN_IDS
 from database import fetchrow, execute
 
-
 router = Router()
 
+CHANNEL_ID = -1004413314849
 
 # =====================================================
 # KIRIM NOTIF KE ADMIN
@@ -111,6 +111,7 @@ async def approve_pay(call: CallbackQuery):
         purchase["id"],
     )
 
+    # Kirim notifikasi ke pembeli
     try:
         await call.bot.send_message(
             int(user_id),
@@ -119,6 +120,23 @@ async def approve_pay(call: CallbackQuery):
                 f"📂 File : <code>{code}</code>\n\n"
                 "Sekarang kirim kembali kode file tersebut untuk membukanya."
             ),
+            parse_mode="HTML",
+        )
+    except Exception:
+        pass
+
+    # Kirim log ke channel
+    try:
+        await call.bot.send_message(
+            CHANNEL_ID,
+            (
+                "💳 <b>PEMBAYARAN BERHASIL</b>\n\n"
+                f"👤 User : <code>{user_id}</code>\n"
+                f"📂 File : <code>{code}</code>\n"
+                f"💰 Nominal : Rp {purchase['paid_price']:,}\n"
+                f"👮 Admin : <code>{call.from_user.id}</code>\n\n"
+                "✅ Status : <b>DISETUJUI</b>"
+            ).replace(",", "."),
             parse_mode="HTML",
         )
     except Exception:
