@@ -23,10 +23,21 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 # PAYMENT
 # =========================
 
-QR_PAYMENT = "AgACAgUAAxkBAAKEv2p1r2DLEtZexB8c3zcoBn5pmffnAAILFGsb10WhV0rrpqQNiZuOAQADAgADeAADPQQ"
+# manual = QR GoPay Merchant + approve admin
+# bayaron = pembayaran otomatis BayarOn
+PAYMENT_MODE = os.getenv(
+    "PAYMENT_MODE",
+    "manual"
+)
+
+QR_PAYMENT = (
+    "AgACAgUAAxkBAAKEv2p1r2DLEtZexB8c3zcoBn5pmffnAAILFGsb10WhV0rrpqQNiZuOAQADAgADeAADPQQ"
+)
+
 BAYARON_API_KEY = os.getenv("BAYARON_API_KEY")
 print("DEBUG BAYARON KEY:", BAYARON_API_KEY)
 print("DEBUG KEY EXISTS:", bool(BAYARON_API_KEY))
+
 BAYARON_MERCHANT = os.getenv("BAYARON_MERCHANT")
 BAYARON_WEBHOOK_SECRET = os.getenv("BAYARON_WEBHOOK_SECRET")
 # =========================
@@ -71,5 +82,7 @@ if not BOT_TOKEN:
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL belum di-set di .env")
 
-if not BAYARON_API_KEY:
-    raise ValueError("BAYARON_API_KEY belum di-set di .env / Railway Variables")
+if PAYMENT_MODE == "bayaron" and not BAYARON_API_KEY:
+    raise ValueError(
+        "BAYARON_API_KEY belum di-set di .env / Railway Variables"
+    )
