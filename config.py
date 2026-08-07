@@ -12,18 +12,12 @@ TIMEZONE = "Asia/Jakarta"
 # BOT
 # =========================
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-
-BOT_USERNAME = "botmarketRobot"
+BOT_USERNAME = "Ggrobot"
 BOT_URL = f"https://t.me/{BOT_USERNAME}"
-
 # =========================
 # DATABASE
 # =========================
 DATABASE_URL = os.getenv("DATABASE_URL")
-
-STORAGE_CHANNEL_ID = int(
-    os.getenv("STORAGE_CHANNEL_ID", "0")
-)
 
 # =========================
 # PAYMENT
@@ -31,66 +25,47 @@ STORAGE_CHANNEL_ID = int(
 BAYARGG_API_KEY = os.getenv("BAYARGG_API_KEY")
 BAYARGG_MERCHANT = os.getenv("BAYARGG_MERCHANT")
 BAYARGG_WEBHOOK_SECRET = os.getenv("BAYARGG_WEBHOOK_SECRET")
+# =========================
+# CHANNEL / GROUP
+# =========================
+CHANNEL_ID = int(os.getenv("CHANNEL_ID", "-1004449050731"))
 
-# =========================
-# CHANNEL
-# =========================
-CHANNEL_ID = int(
-    os.getenv("CHANNEL_ID", "-1003978483597")
+# Channel khusus laporan penjualan
+SALES_CHANNEL_ID = int(
+    os.getenv(
+        "SALES_CHANNEL_ID",
+        "-1003894841696"
+    )
 )
 
-GROUP_ID = int(
-    os.getenv("GROUP_ID", str(CHANNEL_ID))
-)
-NOTIF_CHANNEL_ID = -1004413314849
+GROUP_ID = int(os.getenv("GROUP_ID", str(CHANNEL_ID)))
+
 # =========================
 # WITHDRAW
 # =========================
 WITHDRAW_CHANNEL_ID = int(
-    os.getenv("WITHDRAW_CHANNEL_ID", "-1004413314849")
+    os.getenv(
+        "WITHDRAW_CHANNEL_ID",
+        str(CHANNEL_ID)
+    )
 )
 
 # =========================
 # ADMIN
 # =========================
 ADMIN_IDS = [
-    int(x.strip())
-    for x in os.getenv(
-        "ADMIN_IDS",
-        "6847035364"
-    ).split(",")
+    int(x)
+    for x in os.getenv("ADMIN_IDS", "6665664367").split(",")
     if x.strip().isdigit()
 ]
-
-VVIP_USERS = {
-    99887766,
-    55667788,
-}
-
 # =========================
 # VALIDATION
 # =========================
 if not BOT_TOKEN:
-    raise ValueError(
-        "BOT_TOKEN belum di-set di Railway Variables"
-    )
+    raise ValueError("BOT_TOKEN belum di-set di .env")
 
 if not DATABASE_URL:
-    raise ValueError(
-        "DATABASE_URL belum di-set"
-    )
-
-if not STORAGE_CHANNEL_ID:
-    raise ValueError(
-        "STORAGE_CHANNEL_ID belum di-set"
-    )
+    raise ValueError("DATABASE_URL belum di-set di .env")
 
 if not BAYARGG_API_KEY:
-    raise ValueError(
-        "BAYARGG_API_KEY belum di-set"
-    )
-
-if not WITHDRAW_CHANNEL_ID:
-    raise ValueError(
-        "WITHDRAW_CHANNEL_ID belum di-set"
-    )
+    raise ValueError("BAYARGG_API_KEY belum di-set di .env / Railway Variables")

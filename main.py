@@ -6,101 +6,107 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from utils.redis_client import init_redis
 from config import TIMEZONE
 from bot import bot, dp
-from database import get_pool, close_db, init_db
+from database import get_pool, close_db
 
+# routers
+from handlers.bayargg import router as bayargg_router
+
+# workers
 from tasks.auto_delete import auto_delete_worker
 from tasks.payment_worker import payment_worker
-from tasks.vip_expired import vip_expired_worker
 
 
+# =========================
+# TIMEZONE
+# =========================
 os.environ["TZ"] = TIMEZONE
-
 if hasattr(time, "tzset"):
     time.tzset()
 
-
+# =========================
+# LOGGING
+# =========================
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)s | %(message)s"
 )
 
-
+# =========================
+# GLOBAL TASKS
+# =========================
 tasks = {}
 
 
+# =========================
+# SAFE CREATE TASK
+# =========================
 def create_task(name, coro):
+    if name in tasks and not tasks[name].done():
+        logging.warning(f"⚠️ {name} already running")
+        return
 
-    async def runner():
-        try:
-            await coro
-        except asyncio.CancelledError:
-            logging.warning(f"{name} cancelled")
-            raise
-        except Exception:
-            logging.exception(f"{name} crashed")
-            raise
-
-    tasks[name] = asyncio.create_task(runner())
-    logging.info(f"{name} started")
+    task = asyncio.create_task(coro)
+    tasks[name] = task
+    logging.info(f"✅ {name} started")
 
 
+# =========================
+# SAFE STOP TASK
+# =========================
 async def stop_task(name):
     task = tasks.get(name)
-
     if task:
         task.cancel()
-
         try:
             await task
         except asyncio.CancelledError:
-            logging.info(f"{name} stopped")
+            logging.info(f"❌ {name} stopped")
 
 
+# =========================
+# START WORKERS
+# =========================
 async def start_workers():
+    create_task("AUTO_DELETE", auto_delete_worker())
+    create_task("PAYMENT", payment_worker())
 
+    # ✅ polling bot (SATU-SATUNYA)
     create_task(
-        "AUTO_DELETE",
-        auto_delete_worker()
+        "POLLING",
+        dp.start_polling(
+            bot,
+            allowed_updates=dp.resolve_used_update_types(),
+        )
     )
 
-    create_task(
-        "PAYMENT",
-        payment_worker()
-    )
 
-    create_task(
-        "VIP_EXPIRED",
-        vip_expired_worker()
-    )
-
-    create_task(
-        "MAIN_BOT",
-        dp.start_polling(bot)
-    )
-
-    logging.info("MAIN BOT STARTED")
-
-
+# =========================
+# FASTAPI LIFESPAN
+# =========================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logging.info("🚀 APP STARTING...")
 
-    logging.info("APP STARTING")
-
+    # init DB
     await get_pool()
-    await init_db()
-    await init_redis()
 
-    logging.info("Skipping Telegram startup check...")
+    # reset webhook
+    await bot.delete_webhook(drop_pending_updates=True)
 
-    # Langsung jalankan worker dan bot
+    me = await bot.get_me()
+    logging.info(f"🤖 Logged in as @{me.username}")
+
+    # start all workers
     await start_workers()
 
     yield
 
-    logging.info("SHUTDOWN")
+    # =========================
+    # SHUTDOWN
+    # =========================
+    logging.info("🛑 SHUTDOWN...")
 
     for name in list(tasks.keys()):
         await stop_task(name)
@@ -108,23 +114,33 @@ async def lifespan(app: FastAPI):
     await close_db()
     await bot.session.close()
 
-    logging.info("BOT STOPPED")
+    logging.info("✅ APP STOPPED")
 
 
-app = FastAPI(
-    lifespan=lifespan
-)
+# =========================
+# APP INIT
+# =========================
+app = FastAPI(lifespan=lifespan)
+
+app.include_router(bayargg_router)
 
 
+# =========================
+# ROUTES
+# =========================
 @app.get("/")
 async def root():
-    return {
-        "status": "running"
-    }
+    return {"status": "running"}
 
 
 @app.get("/health")
 async def health():
-    return {
-        "status": "ok"
-    }
+    return {"status": "ok"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 8080))
+    )
