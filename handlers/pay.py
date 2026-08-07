@@ -11,7 +11,7 @@ from aiogram.types import (
 )
 
 from database import fetchrow, execute
-from utils.bayargg import BayarGG
+from utils.bayaron import BayarOn
 from utils.redis_client import safe_set, safe_delete
 
 
@@ -158,17 +158,11 @@ async def pay_file(call: CallbackQuery):
         # =========================
         # CREATE PAYMENT
         # =========================
-        data = await BayarGG.create_payment(
+
+        data = await BayarOn.create_payment(
             amount=price,
             description=f"File {code}",
             customer_name=call.from_user.full_name
-        )
-        final_amount = data.get("final_amount", price)
-
-
-        logger.info(
-            "BAYARGG RESPONSE | %s",
-            data
         )
 
 
@@ -180,15 +174,78 @@ async def pay_file(call: CallbackQuery):
             )
 
 
-        invoice_id = data.get("invoice_id")
-        qr_string = data.get("qris_string")
+        logger.info(
+            "BAYARON RESPONSE | %s",
+            data
+        )
 
 
-        if not invoice_id or not qr_string:
+        transaction = data.get(
+            "transaction",
+            {}
+        )
+
+
+        invoice_id = transaction.get(
+            "reference_id"
+        )
+
+
+        final_amount = transaction.get(
+            "amount_total",
+            price
+        )
+
+
+        if not invoice_id:
+
+            logger.error(
+                "REFERENCE ID INVALID | %s",
+                data
+            )
+
+            return await call.answer(
+                "❌ Payment tidak valid",
+                show_alert=True
+            )
+
+
+        # =========================
+        # INIT QRIS
+        # =========================
+
+        qris_data = await BayarOn.init_qris(
+            invoice_id
+        )
+
+
+        logger.info(
+            "BAYARON QRIS RESPONSE | %s",
+            qris_data
+        )
+
+
+        if not qris_data:
+
+            return await call.answer(
+                "❌ QRIS gagal dibuat",
+                show_alert=True
+            )
+
+
+        qr_string = (
+            qris_data.get("qr_code")
+            or qris_data.get("qr_string")
+            or qris_data.get("qr")
+            or qris_data.get("instruction")
+        )
+
+
+        if not qr_string:
 
             logger.error(
                 "QR DATA INVALID | %s",
-                data
+                qris_data
             )
 
             return await call.answer(
@@ -198,11 +255,9 @@ async def pay_file(call: CallbackQuery):
 
 
         logger.info(
-            "PAYMENT CREATED | invoice=%s",
+            "PAYMENT CREATED | reference=%s",
             invoice_id
         )
-
-
 
         # =========================
         # SAVE PAYMENT
