@@ -54,6 +54,25 @@ async def getfile_start(call: CallbackQuery, state: FSMContext):
 
     await call.answer()
 
+# =========================
+# OPEN FILE BUTTON
+# =========================
+@router.callback_query(F.data.startswith("open_file:"))
+async def open_file_button(call: CallbackQuery, state: FSMContext):
+
+    code = call.data.split(":")[1]
+
+    await state.set_state(GetFileState.wait_code)
+    await state.update_data(code=code)
+
+    await call.message.answer(
+        f"🔑 Kode file:\n\n<code>{code}</code>\n\n"
+        "Silakan kirim kode tersebut untuk membuka file.",
+        parse_mode="HTML"
+    )
+
+    await call.answer()
+
 
 # =========================
 # RECEIVE CODE
