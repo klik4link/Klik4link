@@ -22,6 +22,8 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 # =========================
 # PAYMENT
 # =========================
+
+QR_PAYMENT = "AgACAgUAAxkBAAKEv2p1r2DLEtZexB8c3zcoBn5pmffnAAILFGsb10WhV0rrpqQNiZuOAQADAgADeAADPQQ"
 BAYARON_API_KEY = os.getenv("BAYARON_API_KEY")
 print("DEBUG BAYARON KEY:", BAYARON_API_KEY)
 print("DEBUG KEY EXISTS:", bool(BAYARON_API_KEY))
