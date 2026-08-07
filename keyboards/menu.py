@@ -1,44 +1,22 @@
 from aiogram.types import (
     InlineKeyboardMarkup,
-    InlineKeyboardButton,
+    InlineKeyboardButton
 )
 
 
-def home_kb(user_id: int):
+def home_kb():
 
     return InlineKeyboardMarkup(
         inline_keyboard=[
 
             [
                 InlineKeyboardButton(
-                    text="📤 Upload File",
+                    text="📤 Upload Media",
                     callback_data="upfile"
                 ),
                 InlineKeyboardButton(
-                    text="📥 Get File",
+                    text="📥 Get Media",
                     callback_data="getfile"
-                )
-            ],
-
-            [
-                InlineKeyboardButton(
-                    text="📦 Code",
-                    callback_data="code"
-                ),
-                InlineKeyboardButton(
-                    text="💰 Ewallet",
-                    callback_data="ewallet"
-                )
-            ],
-
-            [
-                InlineKeyboardButton(
-                    text="💸 Withdraw",
-                    callback_data="withdraw"
-                ),
-                InlineKeyboardButton(
-                    text="📊 Marketplace",
-                    callback_data="marketplace"
                 )
             ],
 
@@ -48,14 +26,18 @@ def home_kb(user_id: int):
                     callback_data="account"
                 ),
                 InlineKeyboardButton(
-                    text="📢 Info Channel",
-                    callback_data="channel"
+                    text="💎 VIP",
+                    callback_data="vip"
                 )
             ],
 
             [
                 InlineKeyboardButton(
-                    text="❓ Bantuan",
+                    text="📢 List Channel",
+                    callback_data="list_channel"
+                ),
+                InlineKeyboardButton(
+                    text="ℹ️ Help",
                     callback_data="help"
                 )
             ]
