@@ -4,10 +4,7 @@ import uuid
 
 import httpx
 
-from config import (
-    BAYARON_API_KEY,
-    BAYARON_MERCHANT
-)
+from config import BAYARON_API_KEY
 
 
 logger = logging.getLogger(__name__)
@@ -22,9 +19,13 @@ class BayarOn:
     @staticmethod
     def headers():
 
+        if not BAYARON_API_KEY:
+            raise ValueError(
+                "BAYARON_API_KEY belum diisi"
+            )
+
         return {
             "Authorization": f"Bearer {BAYARON_API_KEY}",
-            "X-Merchant-ID": BAYARON_MERCHANT,
             "Accept": "application/json",
             "Content-Type": "application/json",
         }
@@ -40,33 +41,20 @@ class BayarOn:
         customer_phone: str | None = None,
     ):
 
-        if not BAYARON_API_KEY:
-            logger.error(
-                "BAYARON_API_KEY kosong"
-            )
-            return None
-
-
         reference_id = (
             f"INV-{uuid.uuid4().hex[:12]}"
         )
 
 
         payload = {
-
-            "reference_id": reference_id,
-
-            "amount": amount,
-
-            "description": description,
-
             "items": [
                 {
                     "name": description,
                     "qty": 1,
                     "price": amount
                 }
-            ]
+            ],
+            "reference_id": reference_id
         }
 
 
@@ -91,10 +79,10 @@ class BayarOn:
             )
 
 
-            logger.debug(
+            logger.info(
+                "PAYLOAD %s",
                 json.dumps(
                     payload,
-                    indent=2,
                     ensure_ascii=False
                 )
             )
@@ -104,23 +92,17 @@ class BayarOn:
                 timeout=30
             ) as client:
 
-
                 response = await client.post(
-
                     f"{BASE_URL}/payments",
-
                     headers=BayarOn.headers(),
-
                     json=payload
                 )
-
 
 
             logger.info(
                 "BayarOn status=%s",
                 response.status_code
             )
-
 
             logger.info(
                 "BayarOn response=%s",
@@ -129,7 +111,6 @@ class BayarOn:
 
 
             response.raise_for_status()
-
 
             return response.json()
 
@@ -151,19 +132,13 @@ class BayarOn:
         reference_id: str
     ):
 
-
         payload = {
-
             "method": "qris",
-
             "channel": "qris"
-
         }
 
 
-
         try:
-
 
             logger.info(
                 "BayarOn QRIS init | %s",
@@ -171,28 +146,21 @@ class BayarOn:
             )
 
 
-
             async with httpx.AsyncClient(
                 timeout=30
             ) as client:
 
-
                 response = await client.post(
-
                     f"{BASE_URL}/p/{reference_id}/init-method",
-
                     headers=BayarOn.headers(),
-
                     json=payload
                 )
-
 
 
             logger.info(
                 "QRIS status=%s",
                 response.status_code
             )
-
 
             logger.info(
                 "QRIS response=%s",
@@ -202,18 +170,14 @@ class BayarOn:
 
             response.raise_for_status()
 
-
             return response.json()
-
 
 
         except Exception:
 
-
             logger.exception(
                 "BayarOn QRIS failed"
             )
-
 
             return None
 
@@ -225,23 +189,16 @@ class BayarOn:
         reference_id: str
     ):
 
-
         try:
-
 
             async with httpx.AsyncClient(
                 timeout=30
             ) as client:
 
-
                 response = await client.get(
-
                     f"{BASE_URL}/p/{reference_id}/status",
-
                     headers=BayarOn.headers()
-
                 )
-
 
 
             logger.info(
@@ -257,21 +214,16 @@ class BayarOn:
             )
 
 
-
             response.raise_for_status()
-
 
             return response.json()
 
 
-
         except Exception:
-
 
             logger.exception(
                 "BayarOn check payment failed | %s",
                 reference_id
             )
-
 
             return None
