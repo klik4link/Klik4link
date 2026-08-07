@@ -11,11 +11,11 @@ from config import SALES_CHANNEL_ID
 from database import fetchrow, execute
 from utils.redis_client import redis_client
 from handlers.page import send_page
-from config import BAYARGG_SECRET
+from config import BAYARON_SECRET
 
-router = APIRouter(prefix="/bayargg", tags=["BayarGG"])
+router = APIRouter(prefix="/bayaron", tags=["BayarOn"])
 
-SECRET_KEY = BAYARGG_SECRET.encode()
+SECRET_KEY = BAYARON_SECRET.encode()
 ADMIN_CHAT_ID = -1003894841696
 
 
@@ -52,7 +52,7 @@ async def webhook(request: Request):
         }
 
     logger.info(
-        "BayarGG webhook | invoice=%s | status=%s",
+        "BayarOn webhook | invoice=%s | status=%s",
         invoice_id,
         status
     )
@@ -60,7 +60,7 @@ async def webhook(request: Request):
     if status != "paid":
         return {"success": True, "message": "ignored"}
 
-    redis_key = f"webhook:bayargg:{invoice_id}"
+    redis_key = f"webhook:bayaron:{invoice_id}"
 
     try:
         locked = await redis_client.set(
