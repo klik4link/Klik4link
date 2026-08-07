@@ -12,7 +12,6 @@ from database import get_pool, close_db
 
 # routers
 from handlers.bayaron import router as bayaron_router
-from handlers.admin_purchase import router as admin_purchase_router
 
 # workers
 from tasks.auto_delete import auto_delete_worker
@@ -124,8 +123,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(bayaron_router)
-app.include_router(admin_purchase_router)
-
 
 # =========================
 # ROUTES
