@@ -136,6 +136,7 @@ async def approve_purchase(
             paid_at=NOW()
         WHERE user_id=$1
         AND file_code=$2
+        AND status='pending'
         """,
         user_id,
         code
