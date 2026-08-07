@@ -53,6 +53,7 @@ from handlers.withdraw import (
     withdraw_router,
     withdraw_confirm_router
 )
+from handlers.testdb import router as testdb_router
 from handlers.channel import router as channel_router
 from handlers.admin import router as admin_router
 from handlers.notify import router as notify_router
@@ -93,6 +94,7 @@ dp.include_router(vvip_router)
 # channel & bantuan
 dp.include_router(channel_router)
 dp.include_router(help_router)
+dp.include_router(testdb_router)
 
 # withdraw
 dp.include_router(withdraw_router)
