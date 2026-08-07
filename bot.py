@@ -53,6 +53,7 @@ from handlers.withdraw import (
     withdraw_router,
     withdraw_confirm_router
 )
+from handlers.admin_purchase import router as admin_purchase_router
 from handlers.testdb import router as testdb_router
 from handlers.channel import router as channel_router
 from handlers.admin import router as admin_router
@@ -103,4 +104,5 @@ dp.include_router(withdraw_confirm_router)
 # admin
 dp.include_router(admin_router)
 dp.include_router(notify_router)
+dp.include_router(admin_purchase_router)
 dp.include_router(manual_payment_router)
