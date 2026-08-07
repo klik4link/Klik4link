@@ -13,6 +13,7 @@ from aiogram.types import (
 from database import fetchrow, execute
 from utils.bayaron import BayarOn
 from utils.redis_client import safe_set, safe_delete
+from handlers.admin_purchase import notify_admin_purchase
 
 
 logger = logging.getLogger(__name__)
@@ -286,6 +287,17 @@ async def pay_file(call: CallbackQuery):
             file["owner_id"],
             price,
             invoice_id
+        )
+
+        # =========================
+        # NOTIF ADMIN PEMBELIAN
+        # =========================
+
+        await notify_admin_purchase(
+            bot=call.bot,
+            user_id=user_id,
+            code=code,
+            price=price
         )
 
 
