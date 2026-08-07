@@ -22,9 +22,9 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 # =========================
 # PAYMENT
 # =========================
-BAYARGG_API_KEY = os.getenv("BAYARGG_API_KEY")
-BAYARGG_MERCHANT = os.getenv("BAYARGG_MERCHANT")
-BAYARGG_WEBHOOK_SECRET = os.getenv("BAYARGG_WEBHOOK_SECRET")
+BAYARON_API_KEY = os.getenv("BAYARON_API_KEY")
+BAYARON_MERCHANT = os.getenv("BAYARON_MERCHANT")
+BAYARON_WEBHOOK_SECRET = os.getenv("BAYARON_WEBHOOK_SECRET")
 # =========================
 # CHANNEL / GROUP
 # =========================
@@ -67,5 +67,5 @@ if not BOT_TOKEN:
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL belum di-set di .env")
 
-if not BAYARGG_API_KEY:
-    raise ValueError("BAYARGG_API_KEY belum di-set di .env / Railway Variables")
+if not BAYARON_API_KEY:
+    raise ValueError("BAYARON_API_KEY belum di-set di .env / Railway Variables")
