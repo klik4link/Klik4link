@@ -491,15 +491,6 @@ async def manual_pay(call: CallbackQuery):
             invoice_id
         )
 
-
-
-        await notify_admin_purchase(
-            bot=call.bot,
-            user_id=user_id,
-            code=code,
-            price=price
-        )
-
         await safe_set(
             f"invoice:{invoice_id}",
             f"{user_id}:{code}:pending",
@@ -611,3 +602,66 @@ async def manual_pay(call: CallbackQuery):
             await loading.delete()
         except:
             pass
+
+@router.callback_query(F.data.startswith("manual_check:"))
+async def manual_check(call: CallbackQuery):
+
+    invoice_id = call.data.split(":")[1]
+
+    purchase = await fetchrow(
+        """
+        SELECT *
+        FROM file_purchases
+        WHERE invoice_id=$1
+        """,
+        invoice_id
+    )
+
+    if not purchase:
+        return await call.answer(
+            "Invoice tidak ditemukan",
+            show_alert=True
+        )
+
+    if purchase["status"] == "paid":
+        return await call.answer(
+            "Pembayaran sudah disetujui.",
+            show_alert=True
+        )
+
+    if purchase["status"] == "waiting_confirmation":
+        return await call.answer(
+            "Konfirmasi sudah dikirim ke admin.",
+            show_alert=True
+        )
+
+    await execute(
+        """
+        UPDATE file_purchases
+        SET status='waiting_confirmation'
+        WHERE invoice_id=$1
+        """,
+        invoice_id
+    )
+
+    await notify_admin_purchase(
+        bot=call.bot,
+        user_id=purchase["user_id"],
+        code=purchase["file_code"],
+        price=purchase["paid_price"]
+    )
+
+    await call.message.edit_caption(
+        caption=(
+            "⏳ <b>MENUNGGU VERIFIKASI ADMIN</b>\n\n"
+            "Konfirmasi pembayaran berhasil dikirim.\n\n"
+            "Mohon tunggu admin melakukan pengecekan pembayaran.\n"
+            "Setelah disetujui, file akan otomatis bisa dibuka."
+        ),
+        parse_mode="HTML",
+        reply_markup=None
+    )
+
+    await call.answer(
+        "Konfirmasi berhasil dikirim."
+    )
