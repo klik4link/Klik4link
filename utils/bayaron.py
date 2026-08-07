@@ -1,16 +1,35 @@
 import json
 import logging
+import uuid
 
 import httpx
 
-from config import BAYARON_API_KEY
+from config import (
+    BAYARON_API_KEY,
+    BAYARON_MERCHANT
+)
+
 
 logger = logging.getLogger(__name__)
+
 
 BASE_URL = "https://api.bayaron.com"
 
 
 class BayarOn:
+
+
+    @staticmethod
+    def headers():
+
+        return {
+            "Authorization": f"Bearer {BAYARON_API_KEY}",
+            "X-Merchant-ID": BAYARON_MERCHANT,
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        }
+
+
 
     @staticmethod
     async def create_payment(
@@ -21,13 +40,26 @@ class BayarOn:
         customer_phone: str | None = None,
     ):
 
-        headers = {
-            "Authorization": f"Bearer {BAYARON_API_KEY}",
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        }
+        if not BAYARON_API_KEY:
+            logger.error(
+                "BAYARON_API_KEY kosong"
+            )
+            return None
+
+
+        reference_id = (
+            f"INV-{uuid.uuid4().hex[:12]}"
+        )
+
 
         payload = {
+
+            "reference_id": reference_id,
+
+            "amount": amount,
+
+            "description": description,
+
             "items": [
                 {
                     "name": description,
@@ -37,17 +69,27 @@ class BayarOn:
             ]
         }
 
+
         if customer_name:
             payload["buyer_name"] = customer_name
+
 
         if customer_email:
             payload["buyer_email"] = customer_email
 
+
         if customer_phone:
             payload["buyer_phone"] = customer_phone
 
+
+
         try:
-            logger.info("BayarOn create payment")
+
+            logger.info(
+                "BayarOn create payment | %s",
+                reference_id
+            )
+
 
             logger.debug(
                 json.dumps(
@@ -57,31 +99,40 @@ class BayarOn:
                 )
             )
 
+
             async with httpx.AsyncClient(
                 timeout=30
             ) as client:
 
+
                 response = await client.post(
+
                     f"{BASE_URL}/payments",
-                    headers=headers,
+
+                    headers=BayarOn.headers(),
+
                     json=payload
                 )
 
+
+
             logger.info(
-                "BayarOn status: %s",
+                "BayarOn status=%s",
                 response.status_code
             )
 
-            logger.debug(
-                "BayarOn response: %s",
+
+            logger.info(
+                "BayarOn response=%s",
                 response.text
             )
 
+
             response.raise_for_status()
 
-            data = response.json()
 
-            return data
+            return response.json()
+
 
 
         except Exception:
@@ -94,63 +145,78 @@ class BayarOn:
 
 
 
+
     @staticmethod
     async def init_qris(
         reference_id: str
     ):
 
-        headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        }
 
         payload = {
+
             "method": "qris",
+
             "channel": "qris"
+
         }
+
+
 
         try:
 
+
             logger.info(
-                "BayarOn init QRIS | %s",
+                "BayarOn QRIS init | %s",
                 reference_id
             )
+
+
 
             async with httpx.AsyncClient(
                 timeout=30
             ) as client:
 
+
                 response = await client.post(
+
                     f"{BASE_URL}/p/{reference_id}/init-method",
-                    headers=headers,
+
+                    headers=BayarOn.headers(),
+
                     json=payload
                 )
 
 
+
             logger.info(
-                "BayarOn QRIS status: %s",
+                "QRIS status=%s",
                 response.status_code
             )
 
 
-            logger.debug(
-                "BayarOn QRIS response: %s",
+            logger.info(
+                "QRIS response=%s",
                 response.text
             )
 
 
             response.raise_for_status()
 
+
             return response.json()
+
 
 
         except Exception:
 
+
             logger.exception(
-                "BayarOn init QRIS failed"
+                "BayarOn QRIS failed"
             )
 
+
             return None
+
 
 
 
@@ -159,27 +225,53 @@ class BayarOn:
         reference_id: str
     ):
 
+
         try:
+
 
             async with httpx.AsyncClient(
                 timeout=30
             ) as client:
 
+
                 response = await client.get(
-                    f"{BASE_URL}/p/{reference_id}/status"
+
+                    f"{BASE_URL}/p/{reference_id}/status",
+
+                    headers=BayarOn.headers()
+
                 )
+
+
+
+            logger.info(
+                "CHECK PAYMENT %s | %s",
+                reference_id,
+                response.status_code
+            )
+
+
+            logger.info(
+                "CHECK RESPONSE %s",
+                response.text
+            )
+
 
 
             response.raise_for_status()
 
+
             return response.json()
 
 
+
         except Exception:
+
 
             logger.exception(
                 "BayarOn check payment failed | %s",
                 reference_id
             )
+
 
             return None
