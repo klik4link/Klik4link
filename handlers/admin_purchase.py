@@ -1,5 +1,9 @@
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+)
 
 from config import ADMIN_IDS
 from database import fetchrow, execute
@@ -8,11 +12,15 @@ from database import fetchrow, execute
 router = Router()
 
 
+# =====================================================
+# KIRIM NOTIF KE ADMIN
+# =====================================================
+
 async def notify_admin_purchase(
     bot,
-    user_id,
-    code,
-    price
+    user_id: int,
+    code: str,
+    price: int,
 ):
 
     keyboard = InlineKeyboardMarkup(
@@ -25,35 +33,34 @@ async def notify_admin_purchase(
                 InlineKeyboardButton(
                     text="❌ Tolak",
                     callback_data=f"reject_pay:{user_id}:{code}"
-                )
+                ),
             ]
         ]
     )
 
-
     text = (
         "💳 <b>PEMBAYARAN BARU</b>\n\n"
-        f"👤 User ID : <code>{user_id}</code>\n"
+        f"👤 User : <code>{user_id}</code>\n"
         f"📂 File : <code>{code}</code>\n"
         f"💰 Nominal : Rp {price:,}\n\n"
-        "Menunggu pengecekan admin."
+        "Silakan cek mutasi lalu pilih tombol di bawah."
     ).replace(",", ".")
 
-
     for admin in ADMIN_IDS:
+        try:
+            await bot.send_message(
+                chat_id=admin,
+                text=text,
+                parse_mode="HTML",
+                reply_markup=keyboard,
+            )
+        except Exception:
+            pass
 
-        await bot.send_message(
-            admin,
-            text,
-            parse_mode="HTML",
-            reply_markup=keyboard
-        )
 
-
-
-# =========================
-# APPROVE
-# =========================
+# =====================================================
+# APPROVE PEMBAYARAN
+# =====================================================
 
 @router.callback_query(
     F.data.startswith("approve_pay:")
@@ -62,13 +69,11 @@ async def approve_pay(call: CallbackQuery):
 
     if call.from_user.id not in ADMIN_IDS:
         return await call.answer(
-            "Tidak punya akses",
-            show_alert=True
+            "Tidak memiliki akses.",
+            show_alert=True,
         )
 
-
     _, user_id, code = call.data.split(":")
-
 
     purchase = await fetchrow(
         """
@@ -80,16 +85,20 @@ async def approve_pay(call: CallbackQuery):
         LIMIT 1
         """,
         int(user_id),
-        code
+        code,
     )
-
 
     if not purchase:
         return await call.answer(
-            "Data tidak ditemukan",
-            show_alert=True
+            "Data tidak ditemukan.",
+            show_alert=True,
         )
 
+    if purchase["status"] == "paid":
+        return await call.answer(
+            "Pembayaran sudah disetujui.",
+            show_alert=True,
+        )
 
     await execute(
         """
@@ -99,35 +108,38 @@ async def approve_pay(call: CallbackQuery):
             paid_at=NOW()
         WHERE id=$1
         """,
-        purchase["id"]
+        purchase["id"],
     )
 
-
-    await call.bot.send_message(
-        int(user_id),
-        (
-            "✅ <b>Pembayaran Disetujui</b>\n\n"
-            f"📂 File : <code>{code}</code>\n\n"
-            "Silakan kirim kembali kode file untuk membuka."
-        ),
-        parse_mode="HTML"
-    )
-
+    try:
+        await call.bot.send_message(
+            int(user_id),
+            (
+                "✅ <b>Pembayaran Berhasil Disetujui</b>\n\n"
+                f"📂 File : <code>{code}</code>\n\n"
+                "Sekarang kirim kembali kode file tersebut untuk membukanya."
+            ),
+            parse_mode="HTML",
+        )
+    except Exception:
+        pass
 
     await call.message.edit_text(
-        "✅ PEMBAYARAN DISETUJUI\n\n"
-        f"User: {user_id}\n"
-        f"File: {code}"
+        (
+            "✅ <b>PEMBAYARAN DISETUJUI</b>\n\n"
+            f"👤 User : <code>{user_id}</code>\n"
+            f"📂 File : <code>{code}</code>\n\n"
+            f"👮 Admin : <code>{call.from_user.id}</code>"
+        ),
+        parse_mode="HTML",
     )
 
-
-    await call.answer()
-
+    await call.answer("Berhasil disetujui.")
 
 
-# =========================
-# REJECT
-# =========================
+# =====================================================
+# TOLAK PEMBAYARAN
+# =====================================================
 
 @router.callback_query(
     F.data.startswith("reject_pay:")
@@ -136,40 +148,67 @@ async def reject_pay(call: CallbackQuery):
 
     if call.from_user.id not in ADMIN_IDS:
         return await call.answer(
-            "Tidak punya akses",
-            show_alert=True
+            "Tidak memiliki akses.",
+            show_alert=True,
         )
-
 
     _, user_id, code = call.data.split(":")
 
+    purchase = await fetchrow(
+        """
+        SELECT *
+        FROM file_purchases
+        WHERE user_id=$1
+        AND file_code=$2
+        ORDER BY id DESC
+        LIMIT 1
+        """,
+        int(user_id),
+        code,
+    )
+
+    if not purchase:
+        return await call.answer(
+            "Data tidak ditemukan.",
+            show_alert=True,
+        )
+
+    if purchase["status"] == "paid":
+        return await call.answer(
+            "Pembayaran sudah disetujui.",
+            show_alert=True,
+        )
 
     await execute(
         """
         UPDATE file_purchases
         SET status='rejected'
-        WHERE user_id=$1
-        AND file_code=$2
+        WHERE id=$1
         """,
-        int(user_id),
-        code
+        purchase["id"],
     )
 
-
-    await call.bot.send_message(
-        int(user_id),
-        (
-            "❌ <b>Pembayaran Ditolak</b>\n\n"
-            f"File: <code>{code}</code>\n\n"
-            "Silakan hubungi admin."
-        ),
-        parse_mode="HTML"
-    )
-
+    try:
+        await call.bot.send_message(
+            int(user_id),
+            (
+                "❌ <b>Pembayaran Ditolak</b>\n\n"
+                f"📂 File : <code>{code}</code>\n\n"
+                "Silakan hubungi admin apabila merasa sudah melakukan pembayaran."
+            ),
+            parse_mode="HTML",
+        )
+    except Exception:
+        pass
 
     await call.message.edit_text(
-        "❌ PEMBAYARAN DITOLAK"
+        (
+            "❌ <b>PEMBAYARAN DITOLAK</b>\n\n"
+            f"👤 User : <code>{user_id}</code>\n"
+            f"📂 File : <code>{code}</code>\n\n"
+            f"👮 Admin : <code>{call.from_user.id}</code>"
+        ),
+        parse_mode="HTML",
     )
 
-
-    await call.answer()
+    await call.answer("Pembayaran ditolak.")
