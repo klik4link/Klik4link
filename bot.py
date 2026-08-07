@@ -32,7 +32,7 @@ dp.callback_query.middleware(MaintenanceMiddleware())
 # =========================
 # ROUTERS IMPORT
 # =========================
-
+from get_qr_id import router as qr_router
 from handlers.start import router as start_router
 from handlers.check_sub import router as check_sub_router
 from handlers.upfile import router as upfile_router
@@ -62,7 +62,7 @@ from handlers.admin_purchase import router as admin_purchase_router
 # =========================
 # REGISTER ROUTERS
 # =========================
-
+dp.include_router(qr_router)
 dp.include_router(start_router)
 
 # cek join channel
