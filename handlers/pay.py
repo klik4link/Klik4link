@@ -500,6 +500,12 @@ async def manual_pay(call: CallbackQuery):
             price=price
         )
 
+        await safe_set(
+            f"invoice:{invoice_id}",
+            f"{user_id}:{code}:pending",
+            ex=INVOICE_TTL
+        )
+
 
 
         # =========================
@@ -562,10 +568,13 @@ async def manual_pay(call: CallbackQuery):
             caption=(
                 "📲 <b>PEMBAYARAN MANUAL</b>\n\n"
                 f"📂 File : <code>{code}</code>\n"
-                f"💰 Nominal : Rp {price:,}\n\n"
-                "Silakan scan QR GoPay Merchant.\n\n"
-                "Jika sudah bayar tekan tombol "
-                "<b>Saya Sudah Bayar</b>."
+                f"💰 Nominal : <b>Rp {price:,}</b>\n\n"
+                "📷 Silakan scan QR GoPay Merchant di atas.\n\n"
+                "⚠️ <b>PENTING!</b>\n"
+                "• Nominal pembayaran <b>WAJIB</b> sama persis dengan nominal yang tertera.\n"
+                "• Pembayaran dengan nominal kurang atau lebih tidak dapat diverifikasi otomatis.\n"
+                "• Setelah transfer berhasil, tekan tombol <b>✅ Saya Sudah Bayar</b>.\n"
+                "• Admin akan memverifikasi pembayaran terlebih dahulu sebelum file dapat dibuka."
             ).replace(",", "."),
 
             parse_mode="HTML",
