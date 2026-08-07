@@ -23,6 +23,8 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 # PAYMENT
 # =========================
 BAYARON_API_KEY = os.getenv("BAYARON_API_KEY")
+print("DEBUG BAYARON KEY:", BAYARON_API_KEY)
+print("DEBUG KEY EXISTS:", bool(BAYARON_API_KEY))
 BAYARON_MERCHANT = os.getenv("BAYARON_MERCHANT")
 BAYARON_WEBHOOK_SECRET = os.getenv("BAYARON_WEBHOOK_SECRET")
 # =========================
