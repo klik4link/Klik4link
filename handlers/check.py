@@ -4,7 +4,7 @@ import logging
 
 from database import fetchrow, execute
 from handlers.page import send_page
-from utils.bayargg import BayarGG
+from utils.bayaron import BayarOn
 from bot import bot
 
 
@@ -52,7 +52,7 @@ async def check_payment(call: CallbackQuery):
 
         try:
 
-            data = await BayarGG.check_payment(
+            data = await BayarOn.check_payment(
                 invoice_id
             )
 
@@ -80,7 +80,7 @@ async def check_payment(call: CallbackQuery):
 
 
         logger.info(
-            "BAYARGG RESPONSE | %s",
+            "BAYARON RESPONSE | %s",
             data
         )
 
