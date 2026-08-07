@@ -12,7 +12,7 @@ from aiogram.types import (
 
 from bot import bot
 from config import (
-    BAYARGG_WEBHOOK_SECRET,
+    BAYARON_WEBHOOK_SECRET,
     CHANNEL_ID
 )
 from config_vip import VIP_PACKAGES
@@ -25,8 +25,8 @@ logger = logging.getLogger(__name__)
 
 
 router = APIRouter(
-    prefix="/bayargg",
-    tags=["BayarGG"]
+    prefix="/bayaron",
+    tags=["BayarOn"]
 )
 
 
@@ -39,17 +39,12 @@ def secure_compare(a: str, b: str):
 
 
 @router.post("/webhook")
-async def bayargg_webhook(request: Request):
+async def bayaron_webhook(request: Request):
 
     body = await request.body()
 
     signature = request.headers.get(
-        "X-Webhook-Signature",
-        ""
-    )
-
-    timestamp = request.headers.get(
-        "X-Webhook-Timestamp",
+        "X-BayarOn-Signature",
         ""
     )
 
@@ -71,16 +66,24 @@ async def bayargg_webhook(request: Request):
     # VERIFY SIGNATURE
     # ==========================
 
-    signature_data = (
-        f"{data['invoice_id']}|"
-        f"{data['status']}|"
-        f"{data['final_amount']}|"
-        f"{timestamp}"
+    transaction = data.get(
+        "transaction",
+        {}
     )
 
+    invoice_id = transaction.get(
+        "reference_id"
+    )
+
+    event = data.get(
+        "event",
+        ""
+    )
+
+
     expected = hmac.new(
-        BAYARGG_WEBHOOK_SECRET.encode(),
-        signature_data.encode(),
+        BAYARON_WEBHOOK_SECRET.encode(),
+        body,
         hashlib.sha256
     ).hexdigest()
 
@@ -98,14 +101,11 @@ async def bayargg_webhook(request: Request):
             "message": "Invalid signature"
         }
 
-    invoice_id = data.get(
-        "invoice_id"
-    )
-
     status = (
-        data.get("status")
-        or ""
-    ).lower()
+        data.get("transaction", {})
+        .get("status", "")
+        .lower()
+    )
 
     logger.info(
         "WEBHOOK | invoice=%s status=%s",
