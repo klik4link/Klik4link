@@ -1,6 +1,6 @@
 import qrcode
 import logging
-
+from config import QR_PAYMENT
 from io import BytesIO
 
 from aiogram import Router, F
