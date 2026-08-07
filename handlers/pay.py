@@ -1,6 +1,7 @@
 import qrcode
-from io import BytesIO
 import logging
+
+from io import BytesIO
 
 from aiogram import Router, F
 from aiogram.types import (
@@ -20,65 +21,109 @@ logger = logging.getLogger(__name__)
 
 router = Router()
 
+
 PAY_LOCK_TTL = 30
 INVOICE_TTL = 3600
 
 
+# =================================================
+# MENU PEMBAYARAN
+# =================================================
+
 @router.callback_query(F.data.startswith("pay:"))
-async def pay_file(call: CallbackQuery):
+async def pay_menu(call: CallbackQuery):
 
-    logger.info(
-        "MASUK PAY FILE | %s",
-        call.data
-    )
-
-    await call.answer("⏳ Memproses pembayaran...")
-
-    user_id = call.from_user.id
     code = call.data.split(":")[1]
 
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+
+            [
+                InlineKeyboardButton(
+                    text="⚡ Bayar Otomatis",
+                    callback_data=f"auto_pay:{code}"
+                )
+            ],
+
+            [
+                InlineKeyboardButton(
+                    text="📲 Bayar Manual QR",
+                    callback_data=f"manual_pay:{code}"
+                )
+            ]
+
+        ]
+    )
+
+
+    await call.message.edit_text(
+        "💳 <b>PILIH PEMBAYARAN</b>\n\n"
+        "Silakan pilih metode pembayaran:",
+        parse_mode="HTML",
+        reply_markup=keyboard
+    )
+
+
+    await call.answer()
+
+
+
+# =================================================
+# BAYAR OTOMATIS BAYARON
+# =================================================
+
+@router.callback_query(F.data.startswith("auto_pay:"))
+async def auto_pay(call: CallbackQuery):
+
+    await call.answer(
+        "⏳ Membuat pembayaran..."
+    )
+
+
+    user_id = call.from_user.id
+
+    code = call.data.split(":")[1]
+
+
     loading = await call.message.answer(
-        "⏳ <b>Membuat QRIS...</b>\n\nMohon tunggu sebentar.",
+        "⏳ <b>Membuat QRIS otomatis...</b>",
         parse_mode="HTML"
     )
+
 
     lock_key = f"paylock:{user_id}:{code}"
 
 
-    # =========================
-    # REDIS LOCK
-    # =========================
     try:
-        lock_ok = await safe_set(
+
+        lock = await safe_set(
             lock_key,
             "1",
             ex=PAY_LOCK_TTL,
             nx=True
         )
 
-    except Exception:
-        logger.exception("Redis lock error")
-        lock_ok = True
+
+    except:
+
+        lock = True
 
 
-    if not lock_ok:
 
-        try:
-            await loading.delete()
-        except Exception:
-            pass
+    if not lock:
+
+        await loading.delete()
 
         return await call.answer(
-            "⏳ Tunggu sebentar...",
+            "Tunggu sebentar",
             show_alert=True
         )
 
 
     try:
 
-        # =========================
-        # GET FILE
-        # =========================
+
         file = await fetchrow(
             """
             SELECT
@@ -93,13 +138,15 @@ async def pay_file(call: CallbackQuery):
 
 
         if not file:
+
             return await call.answer(
-                "❌ File tidak ditemukan",
+                "File tidak ditemukan",
                 show_alert=True
             )
 
 
         if not file["is_paid"]:
+
             return await call.answer(
                 "File gratis",
                 show_alert=True
@@ -107,10 +154,12 @@ async def pay_file(call: CallbackQuery):
 
 
         if file["owner_id"] == user_id:
+
             return await call.answer(
                 "Owner tidak perlu bayar",
                 show_alert=True
             )
+
 
 
         price = file["price"] or 0
@@ -118,46 +167,7 @@ async def pay_file(call: CallbackQuery):
 
 
         # =========================
-        # CHECK EXISTING PAYMENT
-        # =========================
-        logger.info(
-            "CHECK EXISTING PAYMENT | user=%s file=%s",
-            user_id,
-            code
-        )
-        existing = await fetchrow(
-            """
-            SELECT
-                invoice_id,
-                status
-            FROM file_purchases
-            WHERE user_id=$1
-              AND file_code=$2
-            ORDER BY id DESC
-            LIMIT 1
-            """,
-            user_id,
-            code
-        )
-
-
-        if existing:
-
-            if existing["status"] == "paid":
-                return await call.answer(
-                    "Sudah dibeli",
-                    show_alert=True
-                )
-
-
-            if existing["status"] == "pending":
-                logger.info(
-                    "Old pending invoice ignored | %s",
-                    existing["invoice_id"]
-                )
-
-        # =========================
-        # CREATE PAYMENT
+        # CREATE BAYARON
         # =========================
 
         data = await BayarOn.create_payment(
@@ -170,15 +180,10 @@ async def pay_file(call: CallbackQuery):
         if not data:
 
             return await call.answer(
-                "❌ Gagal membuat pembayaran",
+                "Gagal membuat pembayaran",
                 show_alert=True
             )
 
-
-        logger.info(
-            "BAYARON RESPONSE | %s",
-            data
-        )
 
 
         transaction = data.get(
@@ -192,77 +197,46 @@ async def pay_file(call: CallbackQuery):
         )
 
 
-        final_amount = transaction.get(
+        if not invoice_id:
+
+            return await call.answer(
+                "Invoice gagal",
+                show_alert=True
+            )
+
+
+        amount = transaction.get(
             "amount_total",
             price
         )
 
 
-        if not invoice_id:
 
-            logger.error(
-                "REFERENCE ID INVALID | %s",
-                data
-            )
-
-            return await call.answer(
-                "❌ Payment tidak valid",
-                show_alert=True
-            )
-
-
-        # =========================
-        # INIT QRIS
-        # =========================
-
-        qris_data = await BayarOn.init_qris(
+        qris = await BayarOn.init_qris(
             invoice_id
         )
 
 
-        logger.info(
-            "BAYARON QRIS RESPONSE | %s",
-            qris_data
-        )
-
-
-        if not qris_data:
-
-            return await call.answer(
-                "❌ QRIS gagal dibuat",
-                show_alert=True
-            )
-
-
         qr_string = (
-            qris_data.get("qr_code")
-            or qris_data.get("qr_string")
-            or qris_data.get("qr")
-            or qris_data.get("instruction")
+            qris.get("qr_code")
+            or qris.get("qr_string")
+            or qris.get("qr")
         )
 
 
         if not qr_string:
 
-            logger.error(
-                "QR DATA INVALID | %s",
-                qris_data
-            )
-
             return await call.answer(
-                "❌ QRIS tidak tersedia",
+                "QRIS gagal dibuat",
                 show_alert=True
             )
 
 
-        logger.info(
-            "PAYMENT CREATED | reference=%s",
-            invoice_id
-        )
 
         # =========================
-        # SAVE PAYMENT
+        # SAVE DATABASE
         # =========================
+
         await execute(
             """
             INSERT INTO file_purchases
@@ -289,9 +263,7 @@ async def pay_file(call: CallbackQuery):
             invoice_id
         )
 
-        # =========================
-        # NOTIF ADMIN PEMBELIAN
-        # =========================
+
 
         await notify_admin_purchase(
             bot=call.bot,
@@ -302,31 +274,22 @@ async def pay_file(call: CallbackQuery):
 
 
 
-        # =========================
-        # REDIS TRACK
-        # =========================
-        try:
-
-            await safe_set(
-                f"invoice:{invoice_id}",
-                f"{user_id}:{code}:pending",
-                ex=INVOICE_TTL
-            )
-
-        except Exception:
-
-            logger.exception(
-                "Invoice redis failed"
-            )
+        await safe_set(
+            f"invoice:{invoice_id}",
+            f"{user_id}:{code}:pending",
+            ex=INVOICE_TTL
+        )
 
 
 
         # =========================
-        # GENERATE QR
+        # BUAT QR IMAGE
         # =========================
+
         qr = qrcode.make(
             qr_string
         )
+
 
         buf = BytesIO()
 
@@ -338,16 +301,8 @@ async def pay_file(call: CallbackQuery):
         buf.seek(0)
 
 
-        if buf.getbuffer().nbytes == 0:
 
-            return await call.answer(
-                "❌ QR gagal dibuat",
-                show_alert=True
-            )
-
-
-
-        kb = InlineKeyboardMarkup(
+        keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
 
                 [
@@ -368,30 +323,9 @@ async def pay_file(call: CallbackQuery):
         )
 
 
-        # =========================
-        # SEND QR
-        # =========================
-        logger.info(
-            "TRY SEND QR | %s",
-            invoice_id
-        )
 
-        # Hapus pesan "FILE BERBAYAR"
-        try:
+        await call.message.delete()
 
-            await call.message.delete()
-
-            logger.info(
-                "PAY MESSAGE DELETED | user=%s file=%s",
-                user_id,
-                code
-            )
-
-        except Exception:
-
-            logger.exception(
-                "DELETE PAY MESSAGE ERROR"
-            )
 
 
         msg = await call.message.answer_photo(
@@ -401,21 +335,18 @@ async def pay_file(call: CallbackQuery):
             ),
 
             caption=(
-                "💳 <b>PAYMENT QRIS</b>\n\n"
-                f"🧾 Invoice : <code>{invoice_id}</code>\n"
-                f"💰 Total Bayar : Rp {final_amount:,}\n\n"
-                "Scan QR untuk melakukan pembayaran."
+                "⚡ <b>PAYMENT OTOMATIS</b>\n\n"
+                f"📂 File : <code>{code}</code>\n"
+                f"💰 Nominal : Rp {amount:,}\n\n"
+                "Scan QR dan bot akan cek otomatis."
             ).replace(",", "."),
 
             parse_mode="HTML",
-            reply_markup=kb
+            reply_markup=keyboard
         )
 
 
 
-        # =========================
-        # SAVE QR MESSAGE
-        # =========================
         await execute(
             """
             UPDATE file_purchases
@@ -430,19 +361,11 @@ async def pay_file(call: CallbackQuery):
         )
 
 
-        logger.info(
-            "QR SENT | invoice=%s | message=%s",
-            invoice_id,
-            msg.message_id
-        )
-
 
     except Exception:
 
         logger.exception(
-            "PAY FILE ERROR | user=%s | file=%s",
-            user_id,
-            code
+            "AUTO PAY ERROR"
         )
 
         raise
@@ -453,8 +376,7 @@ async def pay_file(call: CallbackQuery):
 
         try:
             await loading.delete()
-
-        except Exception:
+        except:
             pass
 
 
@@ -462,6 +384,221 @@ async def pay_file(call: CallbackQuery):
             await safe_delete(
                 lock_key
             )
+        except:
+            pass
 
-        except Exception:
+
+# =================================================
+# BAYAR MANUAL QR GOPAY MERCHANT
+# =================================================
+
+@router.callback_query(F.data.startswith("manual_pay:"))
+async def manual_pay(call: CallbackQuery):
+
+    await call.answer(
+        "⏳ Menyiapkan pembayaran..."
+    )
+
+
+    user_id = call.from_user.id
+    code = call.data.split(":")[1]
+
+
+    loading = await call.message.answer(
+        "⏳ <b>Menyiapkan QR Manual...</b>",
+        parse_mode="HTML"
+    )
+
+
+    try:
+
+        file = await fetchrow(
+            """
+            SELECT
+                owner_id,
+                price,
+                is_paid
+            FROM files
+            WHERE code=$1
+            """,
+            code
+        )
+
+
+        if not file:
+
+            return await call.answer(
+                "File tidak ditemukan",
+                show_alert=True
+            )
+
+
+        if not file["is_paid"]:
+
+            return await call.answer(
+                "File gratis",
+                show_alert=True
+            )
+
+
+        if file["owner_id"] == user_id:
+
+            return await call.answer(
+                "Owner tidak perlu bayar",
+                show_alert=True
+            )
+
+
+        price = file["price"] or 0
+
+
+
+        # =========================
+        # CREATE MANUAL INVOICE
+        # =========================
+
+        import time
+
+        invoice_id = (
+            f"MANUAL-{user_id}-{code}-{int(time.time())}"
+        )
+
+
+
+        await execute(
+            """
+            INSERT INTO file_purchases
+            (
+                user_id,
+                file_code,
+                owner_id,
+                paid_price,
+                invoice_id,
+                status,
+                created_at
+            )
+            VALUES
+            (
+                $1,$2,$3,$4,$5,
+                'pending',
+                NOW()
+            )
+            """,
+            user_id,
+            code,
+            file["owner_id"],
+            price,
+            invoice_id
+        )
+
+
+
+        await notify_admin_purchase(
+            bot=call.bot,
+            user_id=user_id,
+            code=code,
+            price=price
+        )
+
+
+
+        # =========================
+        # AMBIL QR GOPAY
+        # =========================
+
+        qr_file = await call.bot.get_file(
+            QR_PAYMENT
+        )
+
+
+        qr_download = await call.bot.download_file(
+            qr_file.file_path
+        )
+
+
+        buf = BytesIO(
+            qr_download.read()
+        )
+
+        buf.seek(0)
+
+
+
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+
+                [
+                    InlineKeyboardButton(
+                        text="✅ Saya Sudah Bayar",
+                        callback_data=f"manual_check:{invoice_id}"
+                    )
+                ],
+
+                [
+                    InlineKeyboardButton(
+                        text="❌ Batal",
+                        callback_data=f"cancel:{invoice_id}"
+                    )
+                ]
+
+            ]
+        )
+
+
+
+        try:
+            await call.message.delete()
+        except:
+            pass
+
+
+
+        msg = await call.message.answer_photo(
+            BufferedInputFile(
+                buf.getvalue(),
+                filename="gopay.png"
+            ),
+
+            caption=(
+                "📲 <b>PEMBAYARAN MANUAL</b>\n\n"
+                f"📂 File : <code>{code}</code>\n"
+                f"💰 Nominal : Rp {price:,}\n\n"
+                "Silakan scan QR GoPay Merchant.\n\n"
+                "Jika sudah bayar tekan tombol "
+                "<b>Saya Sudah Bayar</b>."
+            ).replace(",", "."),
+
+            parse_mode="HTML",
+            reply_markup=keyboard
+        )
+
+
+
+        await execute(
+            """
+            UPDATE file_purchases
+            SET
+                qr_message_id=$1,
+                qr_chat_id=$2
+            WHERE invoice_id=$3
+            """,
+            msg.message_id,
+            msg.chat.id,
+            invoice_id
+        )
+
+
+
+    except Exception:
+
+        logger.exception(
+            "MANUAL PAY ERROR"
+        )
+
+
+    finally:
+
+        try:
+            await loading.delete()
+        except:
             pass
