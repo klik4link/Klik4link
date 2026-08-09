@@ -19,6 +19,14 @@ class DompetX:
                 "DOMPETX_API_KEY belum diisi"
             )
     # =========================================================
+    # TIMESTAMP
+    # =========================================================
+    @staticmethod
+    def _timestamp():
+        return str(
+            int(time.time())
+        )
+    # =========================================================
     # SIGNATURE
     # =========================================================
     @staticmethod
@@ -26,6 +34,7 @@ class DompetX:
         timestamp: str,
         body: str
     ) -> str:
+        DompetX._check_api_key()
         signature_data = (
             f"{timestamp}.{body}"
         )
@@ -49,8 +58,10 @@ class DompetX:
             body=body
         )
         headers = {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
+            "Content-Type":
+                "application/json",
+            "Accept":
+                "application/json",
             "X-DOMPAY-API-Key":
                 DOMPETX_API_KEY,
             "X-DOMPAY-Signature":
@@ -77,7 +88,9 @@ class DompetX:
         reference: str | None = None
     ):
         DompetX._check_api_key()
-        reference = reference or (
+        reference = (
+            reference
+            or
             f"INV-{uuid.uuid4().hex[:12].upper()}"
         )
         payload = {
@@ -85,12 +98,16 @@ class DompetX:
             "amount": int(amount),
             "currency": "IDR",
             "reference": reference,
-            "settlementSpeed": "standard",
             "metadata": {
-                "order_name": description,
-                "product_name": description
+                "order_name":
+                    description,
+                "product_name":
+                    description
             }
         }
+        # -----------------------------------------------------
+        # CUSTOMER DATA
+        # -----------------------------------------------------
         if customer_name:
             payload["metadata"][
                 "customer_name"
@@ -103,13 +120,16 @@ class DompetX:
             payload["metadata"][
                 "customer_phone"
             ] = customer_phone
+        # -----------------------------------------------------
+        # BODY
+        # -----------------------------------------------------
         body = json.dumps(
             payload,
             separators=(",", ":"),
             ensure_ascii=False
         )
-        timestamp = str(
-            int(time.time())
+        timestamp = (
+            DompetX._timestamp()
         )
         idempotency_key = (
             f"req_{uuid.uuid4().hex}"
@@ -121,13 +141,13 @@ class DompetX:
         )
         try:
             logger.info(
-                "DompetX CREATE PAYMENT | "
-                "reference=%s | amount=%s",
+                "DOMPETX CREATE PAYMENT | "
+                "reference=%s amount=%s",
                 reference,
                 amount
             )
             logger.debug(
-                "DompetX REQUEST BODY=%s",
+                "DOMPETX REQUEST BODY=%s",
                 body
             )
             async with httpx.AsyncClient(
@@ -139,24 +159,27 @@ class DompetX:
                     headers=headers
                 )
             logger.info(
-                "DompetX RESPONSE | "
-                "status=%s | body=%s",
-                response.status_code,
+                "DOMPETX CREATE RESPONSE | "
+                "status=%s",
+                response.status_code
+            )
+            logger.debug(
+                "DOMPETX CREATE RESPONSE BODY=%s",
                 response.text
             )
             response.raise_for_status()
             return response.json()
         except httpx.HTTPStatusError as exc:
             logger.error(
-                "DompetX HTTP ERROR | "
-                "status=%s | body=%s",
+                "DOMPETX CREATE HTTP ERROR | "
+                "status=%s body=%s",
                 exc.response.status_code,
                 exc.response.text
             )
             return None
         except Exception:
             logger.exception(
-                "DompetX create payment failed"
+                "DOMPETX CREATE PAYMENT ERROR"
             )
             return None
     # =========================================================
@@ -168,9 +191,11 @@ class DompetX:
         payment_id: str
     ):
         DompetX._check_api_key()
+        # Dokumentasi SDK DompetX menggunakan "{}"
+        # sebagai body yang ditandatangani untuk GET.
         body = "{}"
-        timestamp = str(
-            int(time.time())
+        timestamp = (
+            DompetX._timestamp()
         )
         headers = DompetX.headers(
             timestamp=timestamp,
@@ -178,7 +203,7 @@ class DompetX:
         )
         try:
             logger.info(
-                "DompetX GET PAYMENT | id=%s",
+                "DOMPETX GET PAYMENT | id=%s",
                 payment_id
             )
             async with httpx.AsyncClient(
@@ -189,8 +214,8 @@ class DompetX:
                     headers=headers
                 )
             logger.info(
-                "DompetX DETAIL RESPONSE | "
-                "status=%s | body=%s",
+                "DOMPETX DETAIL RESPONSE | "
+                "status=%s body=%s",
                 response.status_code,
                 response.text
             )
@@ -198,15 +223,15 @@ class DompetX:
             return response.json()
         except httpx.HTTPStatusError as exc:
             logger.error(
-                "DompetX detail HTTP ERROR | "
-                "status=%s | body=%s",
+                "DOMPETX DETAIL HTTP ERROR | "
+                "status=%s body=%s",
                 exc.response.status_code,
                 exc.response.text
             )
             return None
         except Exception:
             logger.exception(
-                "DompetX get payment failed | id=%s",
+                "DOMPETX GET PAYMENT ERROR | id=%s",
                 payment_id
             )
             return None
@@ -220,8 +245,8 @@ class DompetX:
     ):
         DompetX._check_api_key()
         body = "{}"
-        timestamp = str(
-            int(time.time())
+        timestamp = (
+            DompetX._timestamp()
         )
         headers = DompetX.headers(
             timestamp=timestamp,
@@ -229,7 +254,7 @@ class DompetX:
         )
         try:
             logger.info(
-                "DompetX CHECK PAYMENT | id=%s",
+                "DOMPETX CHECK PAYMENT | id=%s",
                 payment_id
             )
             async with httpx.AsyncClient(
@@ -240,8 +265,8 @@ class DompetX:
                     headers=headers
                 )
             logger.info(
-                "DompetX CHECK RESPONSE | "
-                "status=%s | body=%s",
+                "DOMPETX CHECK RESPONSE | "
+                "status=%s body=%s",
                 response.status_code,
                 response.text
             )
@@ -249,15 +274,15 @@ class DompetX:
             return response.json()
         except httpx.HTTPStatusError as exc:
             logger.error(
-                "DompetX check HTTP ERROR | "
-                "status=%s | body=%s",
+                "DOMPETX CHECK HTTP ERROR | "
+                "status=%s body=%s",
                 exc.response.status_code,
                 exc.response.text
             )
             return None
         except Exception:
             logger.exception(
-                "DompetX check payment failed | id=%s",
+                "DOMPETX CHECK PAYMENT ERROR | id=%s",
                 payment_id
             )
             return None
@@ -271,8 +296,8 @@ class DompetX:
     ):
         DompetX._check_api_key()
         body = "{}"
-        timestamp = str(
-            int(time.time())
+        timestamp = (
+            DompetX._timestamp()
         )
         headers = DompetX.headers(
             timestamp=timestamp,
@@ -280,7 +305,8 @@ class DompetX:
         )
         try:
             logger.info(
-                "DompetX CHECK REFERENCE | reference=%s",
+                "DOMPETX CHECK REFERENCE | "
+                "reference=%s",
                 reference
             )
             async with httpx.AsyncClient(
@@ -294,8 +320,8 @@ class DompetX:
                     headers=headers
                 )
             logger.info(
-                "DompetX REFERENCE RESPONSE | "
-                "status=%s | body=%s",
+                "DOMPETX REFERENCE RESPONSE | "
+                "status=%s body=%s",
                 response.status_code,
                 response.text
             )
@@ -303,15 +329,16 @@ class DompetX:
             return response.json()
         except httpx.HTTPStatusError as exc:
             logger.error(
-                "DompetX reference HTTP ERROR | "
-                "status=%s | body=%s",
+                "DOMPETX REFERENCE HTTP ERROR | "
+                "status=%s body=%s",
                 exc.response.status_code,
                 exc.response.text
             )
             return None
         except Exception:
             logger.exception(
-                "DompetX check reference failed | reference=%s",
+                "DOMPETX CHECK REFERENCE ERROR | "
+                "reference=%s",
                 reference
             )
             return None
@@ -325,8 +352,8 @@ class DompetX:
     ):
         DompetX._check_api_key()
         body = "{}"
-        timestamp = str(
-            int(time.time())
+        timestamp = (
+            DompetX._timestamp()
         )
         idempotency_key = (
             f"cancel_{uuid.uuid4().hex}"
@@ -338,7 +365,7 @@ class DompetX:
         )
         try:
             logger.info(
-                "DompetX CANCEL PAYMENT | id=%s",
+                "DOMPETX CANCEL PAYMENT | id=%s",
                 payment_id
             )
             async with httpx.AsyncClient(
@@ -350,8 +377,8 @@ class DompetX:
                     headers=headers
                 )
             logger.info(
-                "DompetX CANCEL RESPONSE | "
-                "status=%s | body=%s",
+                "DOMPETX CANCEL RESPONSE | "
+                "status=%s body=%s",
                 response.status_code,
                 response.text
             )
@@ -359,30 +386,32 @@ class DompetX:
             return response.json()
         except httpx.HTTPStatusError as exc:
             logger.error(
-                "DompetX cancel HTTP ERROR | "
-                "status=%s | body=%s",
+                "DOMPETX CANCEL HTTP ERROR | "
+                "status=%s body=%s",
                 exc.response.status_code,
                 exc.response.text
             )
             return None
         except Exception:
             logger.exception(
-                "DompetX cancel payment failed | id=%s",
+                "DOMPETX CANCEL PAYMENT ERROR | id=%s",
                 payment_id
             )
             return None
     # =========================================================
     # GET QRIS IMAGE
     # GET /v1/qr/{paymentId}
+    #
+    # PUBLIC ENDPOINT
+    # Tidak membutuhkan API Key / Signature
     # =========================================================
     @staticmethod
     async def get_qr(
         payment_id: str
     ):
-        DompetX._check_api_key()
         try:
             logger.info(
-                "DompetX GET QR | id=%s",
+                "DOMPETX GET QR | id=%s",
                 payment_id
             )
             async with httpx.AsyncClient(
@@ -392,8 +421,8 @@ class DompetX:
                     f"{BASE_URL}/v1/qr/{payment_id}"
                 )
             logger.info(
-                "DompetX QR RESPONSE | "
-                "status=%s | content_type=%s",
+                "DOMPETX QR RESPONSE | "
+                "status=%s content_type=%s",
                 response.status_code,
                 response.headers.get(
                     "content-type"
@@ -403,15 +432,15 @@ class DompetX:
             return response.content
         except httpx.HTTPStatusError as exc:
             logger.error(
-                "DompetX QR HTTP ERROR | "
-                "status=%s | body=%s",
+                "DOMPETX QR HTTP ERROR | "
+                "status=%s body=%s",
                 exc.response.status_code,
                 exc.response.text
             )
             return None
         except Exception:
             logger.exception(
-                "DompetX get QR failed | id=%s",
+                "DOMPETX GET QR ERROR | id=%s",
                 payment_id
             )
             return None
