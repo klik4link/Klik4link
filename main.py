@@ -11,7 +11,7 @@ from bot import bot, dp
 from database import get_pool, close_db
 
 # routers
-from handlers.bayaron import router as bayaron_router
+from handlers.dompetx import router as dompetx_router
 
 # workers
 from tasks.auto_delete import auto_delete_worker
@@ -122,7 +122,7 @@ async def lifespan(app: FastAPI):
 # =========================
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(bayaron_router)
+app.include_router(dompetx_router)
 
 # =========================
 # ROUTES
