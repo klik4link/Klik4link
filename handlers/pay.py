@@ -8,6 +8,7 @@ from aiogram.types import (
     InlineKeyboardButton,
     BufferedInputFile
 )
+from uuid import uuid4
 from database import fetchrow, execute
 from utils.dompetx import DompetX
 from utils.redis_client import safe_set, safe_delete
@@ -365,15 +366,16 @@ async def auto_pay(call: CallbackQuery):
 # =========================================================
 @router.callback_query(F.data.startswith("manual_pay:"))
 async def manual_pay(call: CallbackQuery):
-    await call.answer(
-        "⏳ Menyiapkan pembayaran..."
-    )
+    await call.answer("⏳ Menyiapkan pembayaran...")
+
     user_id = call.from_user.id
     code = call.data.split(":", 1)[1]
+
     loading = await call.message.answer(
         "⏳ <b>Menyiapkan QR Manual...</b>",
         parse_mode="HTML"
     )
+
     try:
         file = await fetchrow(
             """
@@ -386,38 +388,38 @@ async def manual_pay(call: CallbackQuery):
             """,
             code
         )
+
         if not file:
             return await call.answer(
                 "File tidak ditemukan.",
                 show_alert=True
             )
+
         if not file["is_paid"]:
             return await call.answer(
                 "File gratis.",
                 show_alert=True
             )
+
         if file["owner_id"] == user_id:
             return await call.answer(
                 "Owner tidak perlu bayar.",
                 show_alert=True
             )
-        price = int(
-            file["price"] or 0
-        )
+
+        price = int(file["price"] or 0)
+
         if price <= 0:
             return await call.answer(
                 "Harga file tidak valid.",
                 show_alert=True
             )
+
         # =================================================
-        # CREATE MANUAL INVOICE
+        # CREATE MANUAL INVOICE (SHORT ID)
         # =================================================
-        invoice_id = (
-            f"MANUAL-"
-            f"{user_id}-"
-            f"{code}-"
-            f"{int(time.time())}"
-        )
+        invoice_id = f"M-{uuid4().hex[:10].upper()}"
+
         await execute(
             """
             INSERT INTO file_purchases
@@ -447,49 +449,46 @@ async def manual_pay(call: CallbackQuery):
             price,
             invoice_id
         )
+
         await safe_set(
             f"invoice:{invoice_id}",
             f"{user_id}:{code}:pending",
             ex=INVOICE_TTL
         )
+
         # =================================================
         # AMBIL QR MANUAL
         # =================================================
         from config import QR_PAYMENT
-        qr_file = await call.bot.get_file(
-            QR_PAYMENT
-        )
-        qr_download = await call.bot.download_file(
-            qr_file.file_path
-        )
-        buf = BytesIO(
-            qr_download.read()
-        )
+
+        qr_file = await call.bot.get_file(QR_PAYMENT)
+        qr_download = await call.bot.download_file(qr_file.file_path)
+
+        buf = BytesIO(qr_download.read())
         buf.seek(0)
+
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
                         text="✅ Saya Sudah Bayar",
-                        callback_data=(
-                            f"manual_check:{invoice_id}"
-                        )
+                        callback_data=f"manual_check:{invoice_id}"
                     )
                 ],
                 [
                     InlineKeyboardButton(
                         text="❌ Batal",
-                        callback_data=(
-                            f"cancel:{invoice_id}"
-                        )
+                        callback_data=f"cancel:{invoice_id}"
                     )
                 ]
             ]
         )
+
         try:
             await call.message.delete()
         except Exception:
             pass
+
         msg = await call.message.answer_photo(
             BufferedInputFile(
                 buf.getvalue(),
@@ -498,22 +497,18 @@ async def manual_pay(call: CallbackQuery):
             caption=(
                 "📲 <b>PEMBAYARAN MANUAL</b>\n\n"
                 f"📂 File : <code>{code}</code>\n"
-                f"💰 Nominal : "
-                f"<b>Rp {price:,}</b>\n\n"
+                f"💰 Nominal : <b>Rp {price:,}</b>\n\n"
                 "📷 Silakan scan QR Merchant di atas.\n\n"
                 "⚠️ <b>PENTING!</b>\n"
-                "• Nominal pembayaran <b>WAJIB</b> "
-                "sama persis dengan nominal yang tertera.\n"
-                "• Pembayaran kurang atau lebih "
-                "tidak dapat diverifikasi otomatis.\n"
-                "• Setelah transfer berhasil, "
-                "tekan <b>✅ Saya Sudah Bayar</b>.\n"
-                "• Admin akan memverifikasi pembayaran "
-                "sebelum file dapat dibuka."
+                "• Nominal pembayaran <b>WAJIB</b> sama persis dengan nominal yang tertera.\n"
+                "• Pembayaran kurang atau lebih tidak dapat diverifikasi otomatis.\n"
+                "• Setelah transfer berhasil, tekan <b>✅ Saya Sudah Bayar</b>.\n"
+                "• Admin akan memverifikasi pembayaran sebelum file dapat dibuka."
             ).replace(",", "."),
             parse_mode="HTML",
             reply_markup=keyboard
         )
+
         await execute(
             """
             UPDATE file_purchases
@@ -526,10 +521,10 @@ async def manual_pay(call: CallbackQuery):
             msg.chat.id,
             invoice_id
         )
+
     except Exception:
-        logger.exception(
-            "MANUAL PAY ERROR"
-        )
+        logger.exception("MANUAL PAY ERROR")
+
     finally:
         try:
             await loading.delete()
