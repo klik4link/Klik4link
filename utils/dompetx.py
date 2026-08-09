@@ -17,6 +17,10 @@ class DompetX:
         timestamp: str,
         body: str
     ) -> str:
+        if not DOMPETX_API_KEY:
+            raise ValueError(
+                "DOMPETX_API_KEY belum diisi"
+            )
         signature_data = (
             f"{timestamp}.{body}"
         )
@@ -39,15 +43,18 @@ class DompetX:
                 "DOMPETX_API_KEY belum diisi"
             )
         signature = DompetX._signature(
-            timestamp,
-            body
+            timestamp=timestamp,
+            body=body
         )
         headers = {
-            "X-DOMPAY-API-Key": DOMPETX_API_KEY,
-            "X-DOMPAY-Signature": signature,
-            "X-DOMPAY-Timestamp": timestamp,
             "Content-Type": "application/json",
             "Accept": "application/json",
+            "X-DOMPAY-API-Key":
+                DOMPETX_API_KEY,
+            "X-DOMPAY-Signature":
+                signature,
+            "X-DOMPAY-Timestamp":
+                timestamp,
         }
         if idempotency_key:
             headers["Idempotency-Key"] = (
@@ -55,7 +62,33 @@ class DompetX:
             )
         return headers
     # =================================================
+    # BUILD REQUEST
+    # =================================================
+    @staticmethod
+    def _prepare_request(
+        payload: dict | None = None,
+        idempotency_key: str | None = None
+    ):
+        if payload is None:
+            body = ""
+        else:
+            body = json.dumps(
+                payload,
+                separators=(",", ":"),
+                ensure_ascii=False
+            )
+        timestamp = str(
+            int(time.time())
+        )
+        headers = DompetX.headers(
+            timestamp=timestamp,
+            body=body,
+            idempotency_key=idempotency_key
+        )
+        return body, headers
+    # =================================================
     # CREATE PAYMENT
+    # POST /v1/payments
     # =================================================
     @staticmethod
     async def create_payment(
@@ -65,70 +98,57 @@ class DompetX:
         customer_email: str | None = None,
         customer_phone: str | None = None,
         reference: str | None = None,
-        webhook_url: str | None = None,
+        redirect_url: str | None = None,
+        notes: str | None = None,
     ):
         if not DOMPETX_API_KEY:
             raise ValueError(
                 "DOMPETX_API_KEY belum diisi"
             )
-        # -------------------------------------------------
-        # REFERENCE
-        # -------------------------------------------------
         reference = reference or (
             f"INV-{uuid.uuid4().hex[:12]}"
         )
-        # -------------------------------------------------
-        # PAYLOAD
-        # -------------------------------------------------
+        metadata = {
+            "order_name": description,
+            "product_name": description,
+        }
+        if customer_name:
+            metadata["customer_name"] = (
+                customer_name
+            )
+        if customer_email:
+            metadata["customer_email"] = (
+                customer_email
+            )
+        if customer_phone:
+            metadata["customer_phone"] = (
+                customer_phone
+            )
+        if notes:
+            metadata["notes"] = notes
         payload = {
             "method": "QRIS",
             "amount": int(amount),
             "currency": "IDR",
             "reference": reference,
-            "metadata": {
-                "order_name": description,
-                "product_name": description,
-            }
+            "metadata": metadata,
         }
-        if customer_name:
-            payload["metadata"]["customer_name"] = (
-                customer_name
+        if redirect_url:
+            payload["redirectUrl"] = (
+                redirect_url
             )
-        if customer_email:
-            payload["metadata"]["customer_email"] = (
-                customer_email
+        body, headers = (
+            DompetX._prepare_request(
+                payload=payload,
+                idempotency_key=(
+                    f"req_{uuid.uuid4().hex}"
+                )
             )
-        if customer_phone:
-            payload["metadata"]["customer_phone"] = (
-                customer_phone
-            )
-        if webhook_url:
-            payload["webhookUrl"] = webhook_url
-        # -------------------------------------------------
-        # BODY
-        # -------------------------------------------------
-        body = json.dumps(
-            payload,
-            separators=(",", ":"),
-            ensure_ascii=False
         )
-        timestamp = str(
-            int(time.time())
-        )
-        idempotency_key = (
-            f"req_{uuid.uuid4().hex}"
-        )
-        headers = DompetX.headers(
-            timestamp=timestamp,
-            body=body,
-            idempotency_key=idempotency_key
-        )
-        # -------------------------------------------------
-        # REQUEST
-        # -------------------------------------------------
         try:
             logger.info(
-                "DompetX create payment | reference=%s | amount=%s",
+                "DompetX CREATE PAYMENT | "
+                "reference=%s | amount=%s",
                 reference,
                 amount
             )
@@ -145,18 +165,124 @@ class DompetX:
                     headers=headers
                 )
             logger.info(
-                "DompetX status=%s",
+                "DompetX create status=%s",
                 response.status_code
             )
             logger.info(
-                "DompetX response=%s",
+                "DompetX create response=%s",
                 response.text
             )
             response.raise_for_status()
             return response.json()
         except Exception:
             logger.exception(
-                "DompetX create payment failed"
+                "DompetX create payment failed | "
+                "reference=%s",
+                reference
+            )
+            return None
+    # =================================================
+    # CREATE CHECKOUT
+    # POST /v1/payments/checkout
+    #
+    # RESPONSE:
+    # {
+    #   "id": "...",
+    #   "status": "pending",
+    #   "payment_link": "https://..."
+    # }
+    # =================================================
+    @staticmethod
+    async def create_checkout(
+        amount: int,
+        description: str,
+        customer_name: str | None = None,
+        customer_email: str | None = None,
+        customer_phone: str | None = None,
+        reference: str | None = None,
+        redirect_url: str | None = None,
+        notes: str | None = None,
+        items: list | None = None,
+    ):
+        if not DOMPETX_API_KEY:
+            raise ValueError(
+                "DOMPETX_API_KEY belum diisi"
+            )
+        reference = reference or (
+            f"INV-{uuid.uuid4().hex[:12]}"
+        )
+        metadata = {
+            "order_name": description,
+            "product_name": description,
+        }
+        if customer_name:
+            metadata["customer_name"] = (
+                customer_name
+            )
+        if customer_email:
+            metadata["customer_email"] = (
+                customer_email
+            )
+        if customer_phone:
+            metadata["customer_phone"] = (
+                customer_phone
+            )
+        if notes:
+            metadata["notes"] = notes
+        if items:
+            metadata["items"] = items
+        payload = {
+            "amount": int(amount),
+            "currency": "IDR",
+            "reference": reference,
+            "metadata": metadata,
+        }
+        if redirect_url:
+            payload["redirectUrl"] = (
+                redirect_url
+            )
+        body, headers = (
+            DompetX._prepare_request(
+                payload=payload,
+                idempotency_key=(
+                    f"checkout_{uuid.uuid4().hex}"
+                )
+            )
+        )
+        try:
+            logger.info(
+                "DompetX CREATE CHECKOUT | "
+                "reference=%s | amount=%s",
+                reference,
+                amount
+            )
+            logger.info(
+                "DompetX checkout payload=%s",
+                body
+            )
+            async with httpx.AsyncClient(
+                timeout=30
+            ) as client:
+                response = await client.post(
+                    f"{BASE_URL}/v1/payments/checkout",
+                    content=body,
+                    headers=headers
+                )
+            logger.info(
+                "DompetX checkout status=%s",
+                response.status_code
+            )
+            logger.info(
+                "DompetX checkout response=%s",
+                response.text
+            )
+            response.raise_for_status()
+            return response.json()
+        except Exception:
+            logger.exception(
+                "DompetX create checkout failed | "
+                "reference=%s",
+                reference
             )
             return None
     # =================================================
@@ -170,19 +296,12 @@ class DompetX:
             raise ValueError(
                 "DOMPETX_API_KEY belum diisi"
             )
-        body = ""
-        timestamp = str(
-            int(time.time())
-        )
-        # Untuk GET, signature tetap berdasarkan
-        # timestamp + "." + body kosong
-        headers = DompetX.headers(
-            timestamp=timestamp,
-            body=body
+        body, headers = (
+            DompetX._prepare_request()
         )
         try:
             logger.info(
-                "DompetX get payment | id=%s",
+                "DompetX GET PAYMENT | id=%s",
                 payment_id
             )
             async with httpx.AsyncClient(
@@ -219,17 +338,12 @@ class DompetX:
             raise ValueError(
                 "DOMPETX_API_KEY belum diisi"
             )
-        body = ""
-        timestamp = str(
-            int(time.time())
-        )
-        headers = DompetX.headers(
-            timestamp=timestamp,
-            body=body
+        body, headers = (
+            DompetX._prepare_request()
         )
         try:
             logger.info(
-                "DompetX check payment | id=%s",
+                "DompetX CHECK PAYMENT | id=%s",
                 payment_id
             )
             async with httpx.AsyncClient(
@@ -266,17 +380,13 @@ class DompetX:
             raise ValueError(
                 "DOMPETX_API_KEY belum diisi"
             )
-        body = ""
-        timestamp = str(
-            int(time.time())
-        )
-        headers = DompetX.headers(
-            timestamp=timestamp,
-            body=body
+        body, headers = (
+            DompetX._prepare_request()
         )
         try:
             logger.info(
-                "DompetX check reference | reference=%s",
+                "DompetX CHECK REFERENCE | "
+                "reference=%s",
                 reference
             )
             async with httpx.AsyncClient(
@@ -301,7 +411,8 @@ class DompetX:
             return response.json()
         except Exception:
             logger.exception(
-                "DompetX check reference failed | reference=%s",
+                "DompetX check reference failed | "
+                "reference=%s",
                 reference
             )
             return None
@@ -316,17 +427,12 @@ class DompetX:
             raise ValueError(
                 "DOMPETX_API_KEY belum diisi"
             )
-        body = ""
-        timestamp = str(
-            int(time.time())
-        )
-        headers = DompetX.headers(
-            timestamp=timestamp,
-            body=body
+        body, headers = (
+            DompetX._prepare_request()
         )
         try:
             logger.info(
-                "DompetX cancel payment | id=%s",
+                "DompetX CANCEL PAYMENT | id=%s",
                 payment_id
             )
             async with httpx.AsyncClient(
