@@ -99,7 +99,7 @@ async def process_start(message, loading, user_id, username):
 
     user = await pool.fetchrow(
         """
-        SELECT username, balance
+        SELECT username, is_vvip
         FROM users
         WHERE telegram_id=$1
         """,
@@ -111,7 +111,7 @@ async def process_start(message, loading, user_id, username):
         loading,
         user_id,
         user["username"] or username,
-        user["balance"] or 0
+        user["is_vvip"]
     )
 
 
@@ -124,11 +124,12 @@ async def render_home_fast(
     message,
     user_id,
     username,
-    balance
+    status
 ):
-
-    balance = f"{int(balance):,}".replace(",", ".")
-
+    if status:
+        account_status = "💎 VIP"
+    else:
+        account_status = "🆓 FREE"
     text = (
         "🤖 <b>𝗚𝗚𝗕𝗢𝗧</b>\n"
         "<i>Smart File Sharing Platform</i>\n\n"
@@ -137,20 +138,18 @@ async def render_home_fast(
         f"<code>{user_id}</code>\n\n"
         f"👤 <b>Username</b>\n"
         f"@{username}\n\n"
-        f"💰 <b>Balance</b>\n"
-        f"<code>Rp {balance}</code>\n"
+        f"⭐ <b>Status</b>\n"
+        f"{account_status}\n"
         "━━━━━━━━━━━━━━━━━━\n\n"
         "✨ <b>Selamat datang di GGBOT.</b>\n"
         "Silakan pilih menu yang tersedia di bawah."
     )
-
     try:
         await message.edit_text(
             text,
             parse_mode="HTML",
             reply_markup=home_kb()
         )
-
     except Exception:
         await bot.send_message(
             user_id,
@@ -205,5 +204,5 @@ async def back_home(call: CallbackQuery, state: FSMContext):
         call.message,
         user_id,
         user["username"] or "unknown",
-        user["balance"] or 0
+        user["is_vvip"]
     )
