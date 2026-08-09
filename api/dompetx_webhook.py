@@ -11,11 +11,15 @@ from config import SALES_CHANNEL_ID
 from database import fetchrow, execute
 from utils.redis_client import redis_client
 from handlers.page import send_page
-from config import BAYARON_SECRET
+from config import DOMPETX_API_KEY
 
-router = APIRouter(prefix="/bayaron", tags=["BayarOn"])
+router = APIRouter(
+    prefix="/dompetx",
+    tags=["DompetX"]
+)
 
-SECRET_KEY = BAYARON_SECRET.encode()
+DOMPETX_SECRET = DOMPETX_API_KEY.encode()
+
 ADMIN_CHAT_ID = -1003894841696
 
 
@@ -26,42 +30,96 @@ def secure_compare(a: str, b: str) -> bool:
 @router.post("/webhook")
 async def webhook(request: Request):
     body = await request.body()
-    signature = request.headers.get("X-Callback-Signature", "")
-
+    # =========================
+    # VERIFY SIGNATURE
+    # =========================
+    signature = request.headers.get(
+        "X-Callback-Signature",
+        ""
+    )
     expected = hmac.new(
-        SECRET_KEY,
+        DOMPETX_SECRET,
         body,
         hashlib.sha256
     ).hexdigest()
-
-    if not secure_compare(signature, expected):
-        return {"success": False, "message": "invalid signature"}
-
+    if not secure_compare(
+        signature,
+        expected
+    ):
+        return {
+            "success": False,
+            "message": "invalid signature"
+        }
+    # =========================
+    # PARSE JSON
+    # =========================
     try:
         data = await request.json()
     except Exception:
-        return {"success": False, "message": "invalid json"}
-
-    invoice_id = str(data.get("invoice_id", "")).strip()
-    status = str(data.get("status", "")).strip().lower()
-
+        return {
+            "success": False,
+            "message": "invalid json"
+        }
+    # =========================
+    # DOMPETX PAYLOAD
+    # =========================
+    payload = data.get("data") or {}
+    payment_id = str(
+        payload.get("id", "")
+    ).strip()
+    invoice_id = str(
+        payload.get("reference", "")
+    ).strip()
+    status = str(
+        payload.get("status", "")
+    ).strip().lower()
+    amount = payload.get(
+        "amount",
+        0
+    )
+    event_type = str(
+        data.get("eventType", "")
+    ).strip().lower()
+    # =========================
+    # VALIDATE PAYMENT
+    # =========================
+    if not payment_id:
+        return {
+            "success": False,
+            "message": "missing payment id"
+        }
     if not invoice_id:
         return {
             "success": False,
-            "message": "missing invoice"
+            "message": "missing reference"
         }
-
     logger.info(
-        "BayarOn webhook | invoice=%s | status=%s",
+        "DompetX webhook | "
+        "payment_id=%s | "
+        "invoice=%s | "
+        "status=%s | "
+        "amount=%s | "
+        "event=%s",
+        payment_id,
         invoice_id,
-        status
+        status,
+        amount,
+        event_type
     )
-
+    # =========================
+    # ONLY PROCESS PAID
+    # =========================
     if status != "paid":
-        return {"success": True, "message": "ignored"}
-
-    redis_key = f"webhook:bayaron:{invoice_id}"
-
+        return {
+            "success": True,
+            "message": "ignored"
+        }
+    # =========================
+    # PREVENT DUPLICATE
+    # =========================
+    redis_key = (
+        f"webhook:dompetx:{invoice_id}"
+    )
     try:
         locked = await redis_client.set(
             redis_key,
@@ -69,15 +127,15 @@ async def webhook(request: Request):
             ex=86400,
             nx=True
         )
-
         if not locked:
             return {
                 "success": True,
                 "message": "already processed"
             }
-
     except Exception:
-        logger.exception("Redis lock failed")
+        logger.exception(
+            "Redis lock failed"
+        )
 
     # =========================
     # CEK VIP PAYMENT
