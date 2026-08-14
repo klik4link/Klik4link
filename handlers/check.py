@@ -314,12 +314,6 @@ async def check_payment(call: CallbackQuery):
                     f"<code>{tx['file_code']}</code>\n"
                     f"💵 Harga : "
                     f"Rp {tx['paid_price']:,}\n"
-                    f"💰 Owner menerima : "
-                    f"Rp {income:,}\n"
-                    f"🧾 Invoice : "
-                    f"<code>{invoice_id}</code>\n"
-                    f"🆔 Payment ID : "
-                    f"<code>{payment_id}</code>\n\n"
                     "✅ File berhasil dikirim."
                 ).replace(",", "."),
                 parse_mode="HTML"
