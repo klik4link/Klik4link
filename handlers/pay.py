@@ -272,7 +272,7 @@ async def auto_pay(call: CallbackQuery):
                 [
                     InlineKeyboardButton(
                         text="✅ Check Payment",
-                        callback_data=f"check:{payment_id}"
+                        callback_data=f"check:{reference}"
                     )
                 ],
                 [
