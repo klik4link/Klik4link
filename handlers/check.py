@@ -8,7 +8,7 @@ from utils.redis_client import safe_delete
 from bot import bot
 logger = logging.getLogger(__name__)
 router = Router()
-CHANNEL_PAYMENT = -1003894841696
+CHANNEL_PAYMENT = -1004413314849
 # =========================================================
 # STATUS BERHASIL DOMPETX
 # =========================================================
