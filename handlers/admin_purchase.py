@@ -12,6 +12,7 @@ router = Router()
 
 CHANNEL_ID = -1004413314849
 
+
 # =====================================================
 # KIRIM NOTIF KE ADMIN
 # =====================================================
@@ -22,17 +23,16 @@ async def notify_admin_purchase(
     code: str,
     price: int,
 ):
-
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
                     text="✅ Setujui",
-                    callback_data=f"approve_pay:{user_id}:{code}"
+                    callback_data=f"approve_pay:{user_id}:{code}",
                 ),
                 InlineKeyboardButton(
                     text="❌ Tolak",
-                    callback_data=f"reject_pay:{user_id}:{code}"
+                    callback_data=f"reject_pay:{user_id}:{code}",
                 ),
             ]
         ]
@@ -73,49 +73,121 @@ async def approve_pay(call: CallbackQuery):
             show_alert=True,
         )
 
-    _, user_id, code = call.data.split(":")
+    try:
+        _, user_id_raw, code = call.data.split(":", 2)
+        user_id = int(user_id_raw)
+    except (ValueError, AttributeError):
+        return await call.answer(
+            "Data pembayaran tidak valid.",
+            show_alert=True,
+        )
+
+    # =================================================
+    # Ambil pembayaran TERBARU
+    # Tidak menggunakan kolom id
+    # =================================================
 
     purchase = await fetchrow(
         """
-        SELECT *
+        SELECT
+            user_id,
+            file_code,
+            owner_id,
+            paid_price,
+            invoice_id,
+            payment_id,
+            status,
+            qr_message_id,
+            qr_chat_id,
+            created_at,
+            paid_at
         FROM file_purchases
-        WHERE user_id=$1
-        AND file_code=$2
-        ORDER BY id DESC
+        WHERE user_id = $1
+          AND file_code = $2
+        ORDER BY created_at DESC NULLS LAST
         LIMIT 1
         """,
-        int(user_id),
+        user_id,
         code,
     )
 
     if not purchase:
         return await call.answer(
-            "Data tidak ditemukan.",
+            "Data pembayaran tidak ditemukan.",
             show_alert=True,
         )
 
-    if purchase["status"] == "paid":
+    status = (purchase["status"] or "").lower()
+
+    if status == "paid":
         return await call.answer(
             "Pembayaran sudah disetujui.",
             show_alert=True,
         )
 
-    await execute(
+    if status in {"rejected", "cancelled", "failed"}:
+        return await call.answer(
+            "Pembayaran sudah ditolak/gagal.",
+            show_alert=True,
+        )
+
+    # =================================================
+    # UPDATE PEMBAYARAN
+    # Tidak menggunakan WHERE id
+    # =================================================
+
+    updated = await execute(
         """
         UPDATE file_purchases
         SET
-            status='paid',
-            paid_at=NOW()
-        WHERE id=$1
+            status = 'paid',
+            paid_at = NOW(),
+            updated_at = NOW()
+        WHERE user_id = $1
+          AND file_code = $2
+          AND status NOT IN ('paid', 'rejected', 'cancelled', 'failed')
+          AND created_at = $3
         """,
-        purchase["id"],
+        user_id,
+        code,
+        purchase["created_at"],
     )
 
-    # Kirim notifikasi ke pembeli
+    # Pastikan benar-benar ada row yang di-update
+    if not updated or not str(updated).startswith("UPDATE 1"):
+        # Bisa saja sudah diproses oleh worker/admin lain
+        latest = await fetchrow(
+            """
+            SELECT status
+            FROM file_purchases
+            WHERE user_id = $1
+              AND file_code = $2
+            ORDER BY created_at DESC NULLS LAST
+            LIMIT 1
+            """,
+            user_id,
+            code,
+        )
+
+        if latest and latest["status"] == "paid":
+            return await call.answer(
+                "Pembayaran sudah diproses.",
+                show_alert=True,
+            )
+
+        return await call.answer(
+            "Pembayaran gagal diproses.",
+            show_alert=True,
+        )
+
+    # =================================================
+    # NOTIF KE PEMBELI
+    # =================================================
+
     try:
         await call.bot.send_message(
-            int(user_id),
-            (
+            chat_id=user_id,
+            text=(
                 "✅ <b>Pembayaran Berhasil Disetujui</b>\n\n"
                 f"📂 File : <code>{code}</code>\n\n"
                 "Sekarang kirim kembali kode file tersebut untuk membukanya."
@@ -125,15 +197,20 @@ async def approve_pay(call: CallbackQuery):
     except Exception:
         pass
 
-    # Kirim log ke channel
+    # =================================================
+    # LOG KE CHANNEL
+    # =================================================
+
     try:
+        paid_price = purchase["paid_price"] or 0
+
         await call.bot.send_message(
             CHANNEL_ID,
             (
                 "💳 <b>PEMBAYARAN BERHASIL</b>\n\n"
                 f"👤 User : <code>{user_id}</code>\n"
                 f"📂 File : <code>{code}</code>\n"
-                f"💰 Nominal : Rp {purchase['paid_price']:,}\n"
+                f"💰 Nominal : Rp {paid_price:,}\n"
                 f"👮 Admin : <code>{call.from_user.id}</code>\n\n"
                 "✅ Status : <b>DISETUJUI</b>"
             ).replace(",", "."),
@@ -142,17 +219,25 @@ async def approve_pay(call: CallbackQuery):
     except Exception:
         pass
 
-    await call.message.edit_text(
-        (
-            "✅ <b>PEMBAYARAN DISETUJUI</b>\n\n"
-            f"👤 User : <code>{user_id}</code>\n"
-            f"📂 File : <code>{code}</code>\n\n"
-            f"👮 Admin : <code>{call.from_user.id}</code>"
-        ),
-        parse_mode="HTML",
-    )
+    # =================================================
+    # UPDATE TAMPILAN ADMIN
+    # =================================================
 
-    await call.answer("Berhasil disetujui.")
+    try:
+        await call.message.edit_text(
+            (
+                "✅ <b>PEMBAYARAN DISETUJUI</b>\n\n"
+                f"👤 User : <code>{user_id}</code>\n"
+                f"📂 File : <code>{code}</code>\n"
+                f"💰 Nominal : Rp {(purchase['paid_price'] or 0):,}\n\n"
+                f"👮 Admin : <code>{call.from_user.id}</code>"
+            ).replace(",", "."),
+            parse_mode="HTML",
+        )
+    except Exception:
+        pass
+
+    await call.answer("Pembayaran berhasil disetujui.")
 
 
 # =====================================================
@@ -170,46 +255,97 @@ async def reject_pay(call: CallbackQuery):
             show_alert=True,
         )
 
-    _, user_id, code = call.data.split(":")
+    try:
+        _, user_id_raw, code = call.data.split(":", 2)
+        user_id = int(user_id_raw)
+    except (ValueError, AttributeError):
+        return await call.answer(
+            "Data pembayaran tidak valid.",
+            show_alert=True,
+        )
+
+    # =================================================
+    # Ambil pembayaran TERBARU
+    # =================================================
 
     purchase = await fetchrow(
         """
-        SELECT *
+        SELECT
+            user_id,
+            file_code,
+            owner_id,
+            paid_price,
+            invoice_id,
+            payment_id,
+            status,
+            qr_message_id,
+            qr_chat_id,
+            created_at,
+            paid_at
         FROM file_purchases
-        WHERE user_id=$1
-        AND file_code=$2
-        ORDER BY id DESC
+        WHERE user_id = $1
+          AND file_code = $2
+        ORDER BY created_at DESC NULLS LAST
         LIMIT 1
         """,
-        int(user_id),
+        user_id,
         code,
     )
 
     if not purchase:
         return await call.answer(
-            "Data tidak ditemukan.",
+            "Data pembayaran tidak ditemukan.",
             show_alert=True,
         )
 
-    if purchase["status"] == "paid":
+    status = (purchase["status"] or "").lower()
+
+    if status == "paid":
         return await call.answer(
-            "Pembayaran sudah disetujui.",
+            "Pembayaran sudah disetujui, tidak bisa ditolak.",
             show_alert=True,
         )
 
-    await execute(
+    if status in {"rejected", "cancelled", "failed"}:
+        return await call.answer(
+            "Pembayaran sudah ditolak/gagal.",
+            show_alert=True,
+        )
+
+    # =================================================
+    # UPDATE REJECT
+    # =================================================
+
+    updated = await execute(
         """
         UPDATE file_purchases
-        SET status='rejected'
-        WHERE id=$1
+        SET
+            status = 'rejected',
+            updated_at = NOW()
+        WHERE user_id = $1
+          AND file_code = $2
+          AND status NOT IN ('paid', 'rejected', 'cancelled', 'failed')
+          AND created_at = $3
         """,
-        purchase["id"],
+        user_id,
+        code,
+        purchase["created_at"],
     )
+
+    if not updated or not str(updated).startswith("UPDATE 1"):
+        return await call.answer(
+            "Pembayaran sudah diproses atau gagal diproses.",
+            show_alert=True,
+        )
+
+    # =================================================
+    # NOTIF KE PEMBELI
+    # =================================================
 
     try:
         await call.bot.send_message(
-            int(user_id),
-            (
+            chat_id=user_id,
+            text=(
                 "❌ <b>Pembayaran Ditolak</b>\n\n"
                 f"📂 File : <code>{code}</code>\n\n"
                 "Silakan hubungi admin apabila merasa sudah melakukan pembayaran."
@@ -219,14 +355,44 @@ async def reject_pay(call: CallbackQuery):
     except Exception:
         pass
 
-    await call.message.edit_text(
-        (
-            "❌ <b>PEMBAYARAN DITOLAK</b>\n\n"
-            f"👤 User : <code>{user_id}</code>\n"
-            f"📂 File : <code>{code}</code>\n\n"
-            f"👮 Admin : <code>{call.from_user.id}</code>"
-        ),
-        parse_mode="HTML",
-    )
+    # =================================================
+    # LOG KE CHANNEL
+    # =================================================
 
-    await call.answer("Pembayaran ditolak.")
+    try:
+        paid_price = purchase["paid_price"] or 0
+
+        await call.bot.send_message(
+            CHANNEL_ID,
+            (
+                "❌ <b>PEMBAYARAN DITOLAK</b>\n\n"
+                f"👤 User : <code>{user_id}</code>\n"
+                f"📂 File : <code>{code}</code>\n"
+                f"💰 Nominal : Rp {paid_price:,}\n"
+                f"👮 Admin : <code>{call.from_user.id}</code>\n\n"
+                "❌ Status : <b>DITOLAK</b>"
+            ).replace(",", "."),
+            parse_mode="HTML",
+        )
+    except Exception:
+        pass
+
+    # =================================================
+    # UPDATE TAMPILAN ADMIN
+    # =================================================
+
+    try:
+        await call.message.edit_text(
+            (
+                "❌ <b>PEMBAYARAN DITOLAK</b>\n\n"
+                f"👤 User : <code>{user_id}</code>\n"
+                f"📂 File : <code>{code}</code>\n"
+                f"💰 Nominal : Rp {(purchase['paid_price'] or 0):,}\n\n"
+                f"👮 Admin : <code>{call.from_user.id}</code>"
+            ).replace(",", "."),
+            parse_mode="HTML",
+        )
+    except Exception:
+        pass
+
+    await call.answer("Pembayaran berhasil ditolak.")
