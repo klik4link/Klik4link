@@ -13,27 +13,41 @@ class BanMiddleware(BaseMiddleware):
         else:
             return await handler(event, data)
 
-        pool = await get_pool()
+        try:
+            pool = await get_pool()
 
-        user = await pool.fetchrow(
-            """
-            SELECT is_banned
-            FROM users
-            WHERE id=$1
-            """,
-            user_id
-        )
+            user = await pool.fetchrow(
+                """
+                SELECT is_banned
+                FROM users
+                WHERE telegram_id = $1
+                LIMIT 1
+                """,
+                user_id,
+            )
 
-        if user and user["is_banned"]:
+            if user and user["is_banned"]:
 
-            if isinstance(event, Message):
-                await event.answer("🚫 Akun Anda telah diblokir.")
-            else:
-                await event.answer(
-                    "🚫 Akun Anda diblokir.",
-                    show_alert=True
-                )
+                if isinstance(event, Message):
+                    await event.answer(
+                        "🚫 Akun Anda telah diblokir."
+                    )
+                else:
+                    await event.answer(
+                        "🚫 Akun Anda diblokir.",
+                        show_alert=True,
+                    )
 
-            return
+                return
+
+        except Exception:
+            # Jangan sampai error database di middleware
+            # membuat seluruh bot berhenti menerima update.
+            import logging
+
+            logging.exception(
+                "❌ BAN MIDDLEWARE ERROR | user=%s",
+                user_id,
+            )
 
         return await handler(event, data)
